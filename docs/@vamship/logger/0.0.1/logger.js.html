@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>logger.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-logger.html">logger</a><ul class='methods'><li data-type='method'><a href="module-logger.html#.configure">configure</a></li><li data-type='method'><a href="module-logger.html#.disableMock">disableMock</a></li><li data-type='method'><a href="module-logger.html#.enableMock">enableMock</a></li><li data-type='method'><a href="module-logger.html#.getLogger">getLogger</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">logger.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+const _pino = require('pino');
+const _argValidator = require('@vamship/arg-utils').argValidator;
+
+const EMPTY_FUNC = () => {};
+const LOG_LEVELS = [
+    'silent',
+    'trace',
+    'debug',
+    'info',
+    'warn',
+    'error',
+    'fatal'
+];
+const MOCK_LOGGER = LOG_LEVELS.reduce((result, level) => {
+    result[level] = EMPTY_FUNC;
+    return result;
+}, {});
+MOCK_LOGGER.child = () => MOCK_LOGGER;
+MOCK_LOGGER.__isMock = true;
+
+let _isInitialized = false;
+let _isMockEnabled = false;
+let _logger = null;
+
+/**
+ * Utility module that provides a very lightweight abstraction over a logger
+ * component. This allows a consistent initialization and usage pattern for
+ * loggers irrespective of the underlying logger implementation.
+ *
+ * This module also provides useful functionality for muting and unmuting logs.
+ *
+ * @module logger
+ */
+module.exports = {
+    /**
+     * Re enables logging by undoing the actions performed by
+     * [enableMock()]{@link module:logger.enableMock}. Invoking this method will
+     * only impact newly created logger instances, and will have no impact on
+     * logger objects that have been created in the past.
+     *
+     * This method is primarily intended for debugging/testing purposes.
+     */
+    disableMock: function() {
+        _isMockEnabled = false;
+    },
+
+    /**
+     * Forces the logger provider to generate mock loggers that do not
+     * perform any real logging.
+     *
+     * This method is primarily intended for debugging/testing purposes where
+     * log messages may have to be suppressed.
+     */
+    enableMock: function() {
+        _isMockEnabled = true;
+    },
+
+    /**
+     * Configures global logger settings, including application name and other
+     * metadata parameters that will be applied to all log messages. This
+     * method must be invoked before any calls to
+     * [getLogger()]{@link module:logger.getLogger} in order to
+     * ensure that all logger instances are configured correctly.
+     *
+     * @param {String} name The name to assign to the root logger. This is
+     *        typically the application name.
+     * @param {Object} [options] A set of logger specific configuration
+     *        parameters.
+     * @param {String} [options.level='info'] The log level filter assigned to
+     *        the logger object.
+     * @param {Boolean} [options.extreme=true] When enabled, optimizes the
+     *        logger for speed by buffering messages and writing them in larger
+     *        chunks. See [this link]{@link https://github.com/pinojs/pino/blob/master/docs/extreme.md}
+     *        for more information.
+     */
+    configure: function(name, options) {
+        _argValidator.checkString(name).throw('Invalid name (arg #1)');
+
+        _argValidator.checkObject(options).do(() => (options = {}));
+        _argValidator
+            .checkEnum(options.level, LOG_LEVELS)
+            .do(() => (options.level = 'info'));
+        _argValidator
+            .checkBoolean(options.extreme)
+            .do(() => (options.extreme = true));
+
+        if (_isInitialized) {
+            // Already initialized. Do nothing.
+            return;
+        }
+
+        const stream = {
+            stream: process.stdout,
+            level: options.level,
+            extreme: options.extreme
+        };
+
+        _logger = _pino({
+            name,
+            streams: [stream]
+        });
+
+        _isInitialized = true;
+    },
+
+    /**
+     * Returns a preconfigured logger for the specified module.
+     *
+     * @param {String} group The name of the logger group. This typically
+     *        identifies the module for which the logger will be returned.
+     * @param {Object} [props={}] Optional properties to be added to the logger
+     *        metadata. Each of these properties will be included with all log
+     *        statements.
+     * @return {Object} A logger object that can be used for logging. If the
+     *         logger is not already configured using the
+     *         [configure()]{@link module:logger.configure()} method, this
+     *         object will be a mock object that supports the logging methods,
+     *         but does not actually perform any logging.
+     */
+    getLogger: function(group, props) {
+        _argValidator.checkString(group).throw('Invalid group (arg #1)');
+        if (!_isInitialized || _isMockEnabled) {
+            // Already initialized. Return mock logger.
+            return MOCK_LOGGER;
+        }
+        const loggerProps = Object.assign({}, props, {
+            group
+        });
+        return _logger.child(loggerProps);
+    }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Feb 14 2018 17:12:07 GMT-0500 (EST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
