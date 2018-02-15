@@ -1,5 +1,4 @@
 # @vamship/logger
-
 _Singleton module for configuration and initialization of application wide
 logger objects._
 
@@ -8,7 +7,6 @@ abstracts the configuration and creation of application wide logger objects.
 Actual logging functionality is provided by [pino](https://getpino.io/#/)
 
 ## Motivation
-
 Logging is an essential part of developing good applications, and there are
 multiple logging solutions available for developers to choose from. This
 library is not an attempt to reinvent that wheel. Instead, this library focuses
@@ -46,7 +44,6 @@ is especially useful for writing tests, when logging statements could
 potentially interfere with test results.
 
 ## Installation
-
 This library can be installed using npm:
 ```
 npm install @vamship/logger
@@ -113,8 +110,4 @@ One of the ideas behind this library is to also enable a relatively transparent
 mechanism for swapping out one underlying logger implementation with another.
 While this is not a primary goal, the abstraction provided by this library
 could be helpful under certain conditions.
-
-
-
-
 
