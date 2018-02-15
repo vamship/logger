@@ -1,6 +1,6 @@
 'use strict';
 
-const {Directory} = require('@vamship/grunt-utils');
+const { Directory } = require('@vamship/grunt-utils');
 
 // -------------------------------------------------------------------------------
 //  Help documentation

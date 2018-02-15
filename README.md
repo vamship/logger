@@ -1,4 +1,5 @@
 # @vamship/logger
+
 _Singleton module for configuration and initialization of application wide
 logger objects._
 
@@ -7,6 +8,7 @@ abstracts the configuration and creation of application wide logger objects.
 Actual logging functionality is provided by [pino](https://getpino.io/#/)
 
 ## Motivation
+
 Logging is an essential part of developing good applications, and there are
 multiple logging solutions available for developers to choose from. This
 library is not an attempt to reinvent that wheel. Instead, this library focuses
@@ -19,7 +21,7 @@ is typically addressed in one of two ways:
 
 1. Each code module independently configures and creates its own logger object
 2. The entry point for the application creates the logger and passes it down to
-all other objects that are created within the application
+   all other objects that are created within the application
 
 When each code module attempts to configure its own logger object, it opens up
 opportunities for inconsistent initialization of the logger. It also becomes
@@ -44,7 +46,9 @@ is especially useful for writing tests, when logging statements could
 potentially interfere with test results.
 
 ## Installation
+
 This library can be installed using npm:
+
 ```
 npm install @vamship/logger
 ```
@@ -52,10 +56,12 @@ npm install @vamship/logger
 ## Usage
 
 ### Using the logger
+
 Before creating any logger instances, the logger must be configured using the
 `configure()` method:
 
 #### index.js (application entry point):
+
 ```
 const _logger = require('@vamship/logger');
 // Configure application wide logger
@@ -72,6 +78,7 @@ const user = require('./user');
 ```
 
 #### user.js (Module to manage users):
+
 ```
 const _logger = require('@vamship/logger');
 
@@ -86,6 +93,7 @@ class User {
 ```
 
 ### Testing
+
 When tests are being written for a module that uses a logger, the test harness
 can invoke the `enableMock()` prior to loading any of the modules under test.
 This ensures that mock loggers are returned on every `getLogger()` call, making
@@ -110,4 +118,3 @@ One of the ideas behind this library is to also enable a relatively transparent
 mechanism for swapping out one underlying logger implementation with another.
 While this is not a primary goal, the abstraction provided by this library
 could be helpful under certain conditions.
-
