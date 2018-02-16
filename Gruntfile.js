@@ -75,7 +75,7 @@ module.exports = function(grunt) {
     //Load all grunt tasks by reading package.json. Ignore @vamshi/grunt-utils,
     //which is actually a utility library and not a grunt task.
     require('load-grunt-tasks')(grunt, {
-        pattern: [ 'grunt-*', '!@vamship/grunt-utils']
+        pattern: ['grunt-*', '!@vamship/grunt-utils']
     });
 
     /* ------------------------------------------------------------------------
