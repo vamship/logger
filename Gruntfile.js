@@ -72,8 +72,11 @@ module.exports = function(grunt) {
     //Time the grunt process, so that we can understand time consumed per task.
     require('time-grunt')(grunt);
 
-    //Load all grunt tasks by reading package.json.
-    require('load-grunt-tasks')(grunt);
+    //Load all grunt tasks by reading package.json. Ignore @vamshi/grunt-utils,
+    //which is actually a utility library and not a grunt task.
+    require('load-grunt-tasks')(grunt, {
+        pattern: [ 'grunt-*', '!@vamship/grunt-utils']
+    });
 
     /* ------------------------------------------------------------------------
      * Project structure and static parameters.
