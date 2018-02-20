@@ -63,14 +63,15 @@ Before creating any logger instances, the logger must be configured using the
 #### index.js (application entry point):
 
 ```
-const _logger = require('@vamship/logger');
-// Configure application wide logger
-_logger.configure('my-app', {
-    level: 'debug'
-});
+const logger = require('@vamship/logger')
+                    // Configure application wide logger
+                    .configure('myApp', {
+                        level: 'debug'
+                    })
+                    // Logger object for the main module
+                    .getLogger('main');
 
-// Logger object for the main module
-const logger = _logger.getLogger('main');
+// Write your first log statement.
 logger.trace('Logger initialized');
 
 // Now load other modules.

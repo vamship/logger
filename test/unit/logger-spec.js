@@ -62,6 +62,13 @@ describe('logger', function() {
             });
         });
 
+        it('should return a reference to the logger module when invoked', () => {
+            const name = _testValues.getString('appName');
+            const ret = _logger.configure(name);
+
+            expect(ret).to.equal(_logger);
+        });
+
         it('should initialize the logger object with the correct parameters', () => {
             const name = _testValues.getString('appName');
             const level = 'debug';

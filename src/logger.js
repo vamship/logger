@@ -1,7 +1,7 @@
 'use strict';
 
 const _pino = require('pino');
-const { argValidator: _argValidator} = require('@vamship/arg-utils');
+const { argValidator: _argValidator } = require('@vamship/arg-utils');
 
 const EMPTY_FUNC = () => {};
 const LOG_LEVELS = [
@@ -74,6 +74,9 @@ module.exports = {
      *        logger for speed by buffering messages and writing them in larger
      *        chunks. See [this link]{@link https://github.com/pinojs/pino/blob/master/docs/extreme.md}
      *        for more information.
+     *
+     * @return {module:logger} A reference to the current module, allowing for
+     *         chaining of method calls.
      */
     configure: function(name, options) {
         _argValidator.checkString(name).throw('Invalid name (arg #1)');
@@ -103,6 +106,8 @@ module.exports = {
         });
 
         _isInitialized = true;
+
+        return module.exports;
     },
 
     /**
