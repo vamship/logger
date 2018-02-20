@@ -1,7 +1,7 @@
 'use strict';
 
 const _pino = require('pino');
-const _argValidator = require('@vamship/arg-utils').argValidator;
+const { argValidator: _argValidator} = require('@vamship/arg-utils');
 
 const EMPTY_FUNC = () => {};
 const LOG_LEVELS = [

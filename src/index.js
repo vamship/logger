@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Utilities for creating and configuring logger components.
+ * Utilities for creating and configuring logger objects.
  */
 module.exports = {
     /**
