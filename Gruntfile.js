@@ -117,7 +117,7 @@ module.exports = function(grunt) {
          */
         mocha_istanbul: {
             options: {
-                reportFormats: ['text', 'html'],
+                reportFormats: ['text-summary', 'html'],
                 reporter: 'spec',
                 colors: true
             },
