@@ -16,6 +16,6 @@ describe('index', function() {
     });
 
     it('should export the expected modules and classes', () => {
-        expect(_index.logger).to.equal(logger);
+        expect(_index).to.equal(logger);
     });
 });
