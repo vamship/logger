@@ -64,12 +64,12 @@ Before creating any logger instances, the logger must be configured using the
 
 ```
 const logger = require('@vamship/logger')
-                    // Configure application wide logger
-                    .configure('myApp', {
-                        level: 'debug'
-                    })
-                    // Logger object for the main module
-                    .getLogger('main');
+                // Configure application wide logger
+                .configure('myApp', {
+                    level: 'debug'
+                })
+                // Logger object for the main module
+                .getLogger('main');
 
 // Write your first log statement.
 logger.trace('Logger initialized');
