@@ -84,7 +84,7 @@ const user = require('./user');
 const _logger = require('@vamship/logger');
 
 class User {
-    constructur(username) {
+    constructor(username) {
         this._logger = _logger.getLogger({
             username
         });
