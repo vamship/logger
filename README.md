@@ -63,7 +63,7 @@ Before creating any logger instances, the logger must be configured using the
 #### index.js (application entry point):
 
 ```
-const logger = require('@vamship/logger')
+const logger = require('@vamship/logger').logger
                 // Configure application wide logger
                 .configure('myApp', {
                     level: 'debug'
@@ -81,7 +81,7 @@ const user = require('./user');
 #### user.js (Module to manage users):
 
 ```
-const _logger = require('@vamship/logger');
+const _logger = require('@vamship/logger').logger;
 
 class User {
     constructor(username) {
