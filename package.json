@@ -32,8 +32,8 @@
     "time-grunt": "^1.4.0"
   },
   "dependencies": {
-    "@vamship/arg-utils": "^1.2.2",
-    "@vamship/error-types": "^1.0.2",
+    "@vamship/arg-utils": "^1.2.3",
+    "@vamship/error-types": "^1.0.3",
     "pino": "^4.13.0"
   },
   "repository": {
