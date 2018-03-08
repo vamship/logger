@@ -33,7 +33,7 @@
     "time-grunt": "^1.4.0"
   },
   "dependencies": {
-    "@vamship/arg-utils": "^1.2.3",
+    "@vamship/arg-utils": "^2.0.0",
     "pino": "^4.13.0"
   },
   "repository": {

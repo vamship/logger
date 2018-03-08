@@ -79,15 +79,17 @@ module.exports = {
      *         chaining of method calls.
      */
     configure: function(name, options) {
-        _argValidator.checkString(name).throw('Invalid name (arg #1)');
+        _argValidator.checkString(name, 1, 'Invalid name (arg #1)');
 
-        _argValidator.checkObject(options).do(() => (options = {}));
-        _argValidator
-            .checkEnum(options.level, LOG_LEVELS)
-            .do(() => (options.level = 'info'));
-        _argValidator
-            .checkBoolean(options.extreme)
-            .do(() => (options.extreme = true));
+        if (!_argValidator.checkObject(options)) {
+            options = {};
+        }
+        if (!_argValidator.checkEnum(options.level, LOG_LEVELS)) {
+            options.level = 'info';
+        }
+        if (!_argValidator.checkBoolean(options.extreme)) {
+            options.extreme = true;
+        }
 
         if (_isInitialized) {
             // Already initialized. Do nothing.
@@ -125,7 +127,7 @@ module.exports = {
      *         but does not actually perform any logging.
      */
     getLogger: function(group, props) {
-        _argValidator.checkString(group).throw('Invalid group (arg #1)');
+        _argValidator.checkString(group, 1, 'Invalid group (arg #1)');
         if (!_isInitialized || _isMockEnabled) {
             // Already initialized. Return mock logger.
             return MOCK_LOGGER;
