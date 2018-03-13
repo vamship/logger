@@ -100,7 +100,7 @@ module.exports = {
             name,
             level: options.level,
             extreme: options.extreme,
-            streams: [ process.stdout ]
+            streams: [process.stdout]
         });
 
         _isInitialized = true;

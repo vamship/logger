@@ -86,7 +86,7 @@ describe('logger', function() {
                 name,
                 level,
                 extreme,
-                streams: [ process.stdout ]
+                streams: [process.stdout]
             });
         });
 
