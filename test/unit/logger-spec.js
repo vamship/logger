@@ -84,13 +84,9 @@ describe('logger', function() {
             expect(_pinoCtor).to.have.been.calledOnce;
             expect(_pinoCtor.args[0][0]).to.deep.equal({
                 name,
-                streams: [
-                    {
-                        stream: process.stdout,
-                        level,
-                        extreme
-                    }
-                ]
+                level,
+                extreme,
+                streams: [ process.stdout ]
             });
         });
 
@@ -105,8 +101,8 @@ describe('logger', function() {
                 _logger.__set__('_isInitialized', false);
 
                 const args = _pinoMock.ctor.args[index][0];
-                expect(args.streams[0].level).to.equal('info');
-                expect(args.streams[0].extreme).to.be.true;
+                expect(args.level).to.equal('info');
+                expect(args.extreme).to.be.true;
             });
         });
 
@@ -122,7 +118,7 @@ describe('logger', function() {
                 _logger.__set__('_isInitialized', false);
 
                 const args = _pinoMock.ctor.args[index][0];
-                expect(args.streams[0].level).to.equal('info');
+                expect(args.level).to.equal('info');
             });
         });
 
@@ -138,7 +134,7 @@ describe('logger', function() {
                 _logger.__set__('_isInitialized', false);
 
                 const args = _pinoMock.ctor.args[index][0];
-                expect(args.streams[0].extreme).to.be.true;
+                expect(args.extreme).to.be.true;
             });
         });
 
@@ -272,7 +268,7 @@ describe('logger', function() {
     });
 
     describe('enableMock()', () => {
-        it('should return a dummy logger when invoked, even if the logger was previously initialized', () => {
+        it('should return a dummy logger when invoked, even if after logger initialization', () => {
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
 

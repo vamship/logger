@@ -96,15 +96,11 @@ module.exports = {
             return;
         }
 
-        const stream = {
-            stream: process.stdout,
-            level: options.level,
-            extreme: options.extreme
-        };
-
         _logger = _pino({
             name,
-            streams: [stream]
+            level: options.level,
+            extreme: options.extreme,
+            streams: [ process.stdout ]
         });
 
         _isInitialized = true;
