@@ -19,9 +19,9 @@ Most applications rely on having multiple code modules, broken up into separate
 files, and each module may want to write log statements during execution. This
 is typically addressed in one of two ways:
 
-1. Each code module independently configures and creates its own logger object
-2. The entry point for the application creates the logger and passes it down to
-   all other objects that are created within the application
+1.  Each code module independently configures and creates its own logger object
+2.  The entry point for the application creates the logger and passes it down to
+    all other objects that are created within the application
 
 When each code module attempts to configure its own logger object, it opens up
 opportunities for inconsistent initialization of the logger. It also becomes
