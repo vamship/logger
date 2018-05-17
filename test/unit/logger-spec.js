@@ -73,9 +73,15 @@ describe('logger', function() {
             const name = _testValues.getString('appName');
             const level = 'debug';
             const extreme = false;
+            const streams = [process.stderr];
+            const serializers = {
+                mySerializer: () => {
+                    return 'test';
+                }
+            };
             const _pinoCtor = _pinoMock.ctor;
 
-            const options = { level, extreme };
+            const options = { level, extreme, streams, serializers };
 
             expect(_pinoCtor).to.not.have.been.called;
 
@@ -86,7 +92,8 @@ describe('logger', function() {
                 name,
                 level,
                 extreme,
-                streams: [process.stdout]
+                streams,
+                serializers
             });
         });
 
@@ -135,6 +142,38 @@ describe('logger', function() {
 
                 const args = _pinoMock.ctor.args[index][0];
                 expect(args.extreme).to.be.true;
+            });
+        });
+
+        it('should use the default value for streams if a valid value is not specified', () => {
+            const inputs = _testValues.allButArray();
+
+            inputs.forEach((streams, index) => {
+                const name = _testValues.getString('appName');
+                const options = { streams };
+                _logger.configure(name, options);
+
+                //Reset the initialized flag
+                _logger.__set__('_isInitialized', false);
+
+                const args = _pinoMock.ctor.args[index][0];
+                expect(args.streams).to.deep.equal([process.stdout]);
+            });
+        });
+
+        it('should use the default value for serializers if a valid value is not specified', () => {
+            const inputs = _testValues.allButObject();
+
+            inputs.forEach((serializers, index) => {
+                const name = _testValues.getString('appName');
+                const options = { serializers };
+                _logger.configure(name, options);
+
+                //Reset the initialized flag
+                _logger.__set__('_isInitialized', false);
+
+                const args = _pinoMock.ctor.args[index][0];
+                expect(args.serializers).to.deep.equal({});
             });
         });
 

@@ -74,6 +74,12 @@ module.exports = {
      *        logger for speed by buffering messages and writing them in larger
      *        chunks. See [this link]{@link https://github.com/pinojs/pino/blob/master/docs/extreme.md}
      *        for more information.
+     * @param {Array} [streams=[process.stdout]] Determines the output streams
+     *        to which log data will be written. If omitted, the logger will be
+     *        configured to output values to process.stdout.
+     * @param {Object} [serializers={}] Specifies serializers that can
+     *        be used to process log data before writing it to the target
+     *        stream(s). If omitted, no special serializers will be applied.
      *
      * @return {module:logger} A reference to the current module, allowing for
      *         chaining of method calls.
@@ -81,14 +87,18 @@ module.exports = {
     configure: function(name, options) {
         _argValidator.checkString(name, 1, 'Invalid name (arg #1)');
 
-        if (!_argValidator.checkObject(options)) {
-            options = {};
-        }
+        options = Object.assign({}, options);
         if (!_argValidator.checkEnum(options.level, LOG_LEVELS)) {
             options.level = 'info';
         }
         if (!_argValidator.checkBoolean(options.extreme)) {
             options.extreme = true;
+        }
+        if (!_argValidator.checkArray(options.streams)) {
+            options.streams = [process.stdout];
+        }
+        if (!_argValidator.checkObject(options.serializers)) {
+            options.serializers = {};
         }
 
         if (_isInitialized) {
@@ -100,7 +110,8 @@ module.exports = {
             name,
             level: options.level,
             extreme: options.extreme,
-            streams: [process.stdout]
+            streams: options.streams,
+            serializers: options.serializers
         });
 
         _isInitialized = true;
