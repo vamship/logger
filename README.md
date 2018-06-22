@@ -7,6 +7,10 @@ This library does not actually provide logging functionality, but merely
 abstracts the configuration and creation of application wide logger objects.
 Actual logging functionality is provided by [pino](https://getpino.io/#/)
 
+## API Documentation
+
+API documentation can be found [here](https://vamship.github.io/logger).
+
 ## Motivation
 
 Logging is an essential part of developing good applications, and there are
