@@ -103,7 +103,7 @@ module.exports = {
 
         if (_isInitialized) {
             // Already initialized. Do nothing.
-            return;
+            return module.exports;
         }
 
         _logger = _pino({
