@@ -7,3 +7,4 @@ Documentation for specific releases can be found here:
 ## [v1.2.0](./@vamship/logger/1.2.0/index.html)
 ## [v1.2.7](./@vamship/logger/1.2.7/index.html)
 ## [v1.3.0](./@vamship/logger/1.3.0/index.html)
+## [v1.3.2](./@vamship/logger/1.3.2/index.html)
