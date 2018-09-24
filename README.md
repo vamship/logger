@@ -112,6 +112,7 @@ class User {
 ### Applying global log overrides
 
 #### index.js (application entry point):
+
 ```
 const logger = require('@vamship/logger').logger
                 // Configure application wide logger
@@ -133,6 +134,7 @@ const user = require('./user');
 ```
 
 ### Third party modules
+
 ```
 // Module fooLib_01
 // This module is loaded after index.js
@@ -160,8 +162,6 @@ const logger = require('@vamship/logger').logger
                 // method is what is used for level overrides
                 .getLogger('fooLib_02');
 ```
-
-
 
 ### Testing
 
