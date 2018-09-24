@@ -105,9 +105,13 @@ module.exports = {
      *        logger for speed by buffering messages and writing them in larger
      *        chunks. See [this link]{@link https://github.com/pinojs/pino/blob/master/docs/extreme.md}
      *        for more information.
-     * @param {Array} [options.streams=[process.stdout]] Determines the output
-     *        stream to which log data will be written. If omitted, the logger
-     *        will be configured to output values to process.stdout.
+     * @param {String|Object} [options.destination='process.stdout'] Determines
+     *        the destination to which log output will be written. If omitted,
+     *        the destination will be defaulted to 'process.stdout'.
+     *        This can be specified either as a string (file name), or a
+     *        writable object. The following strings have special meaning:
+     *        'process.stdout': The output will be written to STDOUT
+     *        'process.stderr': The output will be written to STDERR
      * @param {Object} [options.serializers={}] Specifies serializers that can
      *        be used to process log data before writing it to the target
      *        stream(s). If omitted, no special serializers will be applied.
@@ -129,9 +133,6 @@ module.exports = {
         if (!_argValidator.checkBoolean(options.extreme)) {
             options.extreme = true;
         }
-        if (!_argValidator.checkArray(options.streams)) {
-            options.streams = [process.stdout];
-        }
         if (!_argValidator.checkObject(options.serializers)) {
             options.serializers = {};
         }
@@ -144,13 +145,30 @@ module.exports = {
             return module.exports;
         }
 
-        _logger = _pino({
-            name,
-            level: options.level,
-            extreme: options.extreme,
-            streams: options.streams,
-            serializers: options.serializers
-        });
+        const destMapper = options.extreme ? _pino.extreme : _pino.destination;
+
+        let destination = undefined;
+
+        if (_argValidator.checkObject(options.destination)) {
+            destination = options.destination;
+        } else if (options.destination === 'process.stdout') {
+            destination = destMapper(1);
+        } else if (options.destination === 'process.stderr') {
+            destination = destMapper(2);
+        } else if (_argValidator.checkString(options.destination)) {
+            destination = destMapper(options.destination);
+        } else {
+            destination = destMapper(1);
+        }
+
+        _logger = _pino(
+            {
+                name,
+                level: options.level,
+                serializers: options.serializers
+            },
+            destination
+        );
 
         // Wrap the child method of the logger so that global filters can
         // be applied to it.
