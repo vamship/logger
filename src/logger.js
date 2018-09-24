@@ -1,6 +1,7 @@
 'use strict';
 
 const _pino = require('pino');
+const { Minimatch } = require('minimatch');
 const { argValidator: _argValidator } = require('@vamship/arg-utils');
 
 const EMPTY_FUNC = () => {};
@@ -20,10 +21,40 @@ const MOCK_LOGGER = LOG_LEVELS.reduce((result, level) => {
 MOCK_LOGGER.child = () => MOCK_LOGGER;
 MOCK_LOGGER.__isMock = true;
 
+const _levelOverrides = [];
 let _isInitialized = false;
 let _isMockEnabled = false;
 let _logger = null;
 
+/**
+ * Modifies the logger object by wrapping the child() method. This allows us to
+ * apply globally defined log level filters to child logger objects.
+ *
+ * @param {Object} logger The logger instance on which the child method will
+ *        be wrapped.
+ */
+function _wrapChild(logger) {
+    const originalChild = logger.child;
+    function wrappedChild(props) {
+        const loggerProps = Object.assign({}, props);
+        const group = props.group;
+
+        const level = _levelOverrides.reduce(
+            (result, item) => (item.matcher.match(group) ? item.level : result),
+            undefined
+        );
+        if (level) {
+            loggerProps.level = level;
+        }
+
+        const childLogger = originalChild.call(logger, loggerProps);
+        // Make sure that the wrapped child in turn has it's child method
+        // wrapped.
+        _wrapChild(childLogger);
+        return childLogger;
+    }
+    logger.child = wrappedChild.bind(logger);
+}
 /**
  * Utility module that provides a very lightweight abstraction over a logger
  * component. This allows a consistent initialization and usage pattern for
@@ -80,6 +111,10 @@ module.exports = {
      * @param {Object} [options.serializers={}] Specifies serializers that can
      *        be used to process log data before writing it to the target
      *        stream(s). If omitted, no special serializers will be applied.
+     * @param {Object} [options.levelOverrides={}] Specifies log level overrides
+     *        for dependency modules that use the logger module for logging.
+     *        This allows an application to effectively mute log messages from
+     *        dependencies.
      *
      * @return {module:logger} A reference to the current module, allowing for
      *         chaining of method calls.
@@ -100,6 +135,9 @@ module.exports = {
         if (!_argValidator.checkObject(options.serializers)) {
             options.serializers = {};
         }
+        if (!_argValidator.checkObject(options.levelOverrides)) {
+            options.levelOverrides = {};
+        }
 
         if (_isInitialized) {
             // Already initialized. Do nothing.
@@ -113,6 +151,18 @@ module.exports = {
             streams: options.streams,
             serializers: options.serializers
         });
+
+        // Wrap the child method of the logger so that global filters can
+        // be applied to it.
+        _wrapChild(_logger);
+
+        for (let pattern in options.levelOverrides) {
+            _levelOverrides.push({
+                pattern,
+                matcher: new Minimatch(pattern),
+                level: options.levelOverrides[pattern]
+            });
+        }
 
         _isInitialized = true;
 
@@ -142,6 +192,15 @@ module.exports = {
         const loggerProps = Object.assign({}, props, {
             group
         });
-        return _logger.child(loggerProps);
+        // const level = _levelOverrides.reduce(
+        //     (result, item) => (item.matcher.match(group) ? item.level : result),
+        //     undefined
+        // );
+        // if (level) {
+        //     loggerProps.level = level;
+        // }
+
+        const child = _logger.child(loggerProps);
+        return child;
     }
 };
