@@ -16,7 +16,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "docdash": "^0.4.0",
-    "grunt": "^1.0.1",
+    "grunt": "^1.0.3",
     "grunt-bump": "^0.8.0",
     "grunt-contrib-clean": "^1.1.0",
     "grunt-contrib-watch": "^1.1.0",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@vamship/arg-utils": "^2.0.4",
     "minimatch": "^3.0.4",
-    "pino": "^4.17.0"
+    "pino": "^5.6.1"
   },
   "repository": {
     "type": "git",
