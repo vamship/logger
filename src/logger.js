@@ -36,8 +36,14 @@ let _logger = null;
 function _wrapChild(logger) {
     const originalChild = logger.child;
     function wrappedChild(props) {
-        const loggerProps = Object.assign({}, props);
-        const group = props.group;
+        const loggerProps = Object.assign(
+            {
+                group: ''
+            },
+            logger.__props,
+            props
+        );
+        const group = loggerProps.group;
 
         const level = _levelOverrides.reduce(
             (result, item) => (item.matcher.match(group) ? item.level : result),
@@ -219,6 +225,7 @@ module.exports = {
         // }
 
         const child = _logger.child(loggerProps);
+        child.__props = loggerProps;
         return child;
     }
 };
