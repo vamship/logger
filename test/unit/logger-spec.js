@@ -90,11 +90,6 @@ describe('logger', function() {
                     return 'test';
                 }
             };
-            const levelOverrides = {
-                myGroup: _testValues.getString('level'),
-                'foo*': _testValues.getString('level'),
-                '*bar': _testValues.getString('level')
-            };
             const destinationMethod = _pinoMock.mocks.destination;
             const extremeMethod = _pinoMock.mocks.extreme;
 
@@ -103,14 +98,11 @@ describe('logger', function() {
                 extreme,
                 destination,
                 serializers,
-                levelOverrides
             };
 
             expect(_pinoMock.ctor).to.not.have.been.called;
             expect(destinationMethod.stub).to.not.have.been.called;
             expect(extremeMethod.stub).to.not.have.been.called;
-
-            _logger.__set__('_levelOverrides', []);
 
             _logger.configure(name, options);
 
@@ -130,20 +122,6 @@ describe('logger', function() {
             expect(_pinoMock.ctor.args[0][1]).to.equal(
                 _pinoMock.__simpleDestination
             );
-
-            const globalOverrideList = _logger.__get__('_levelOverrides');
-            expect(globalOverrideList).to.be.an('array');
-            expect(globalOverrideList).to.have.length(
-                Object.keys(levelOverrides).length
-            );
-            globalOverrideList.forEach((item) => {
-                expect(item).to.be.an('object');
-                expect(item.pattern).to.be.a('string').and.not.to.be.empty;
-                expect(item.matcher).to.be.an('object');
-
-                const override = levelOverrides[item.pattern];
-                expect(item.level).to.equal(override);
-            });
         });
 
         it('should initialize the logger with defaults if the options object is not specified', () => {
@@ -497,24 +475,6 @@ describe('logger', function() {
             });
         });
 
-        it('should use the default value for levelOverrides if a valid value is not specified', () => {
-            const inputs = _testValues.allButObject();
-
-            inputs.forEach((levelOverrides, index) => {
-                const name = _testValues.getString('appName');
-                const options = { levelOverrides };
-                const globalOverrideList = _logger.__get__('_levelOverrides');
-                globalOverrideList.splice(0);
-
-                _logger.configure(name, options);
-
-                //Reset the initialized flag
-                _logger.__set__('_isInitialized', false);
-
-                expect(globalOverrideList).to.deep.equal([]);
-            });
-        });
-
         it('should have no impact if invoked multiple times', () => {
             let name = _testValues.getString('appName');
             _logger.configure(name);
@@ -642,272 +602,6 @@ describe('logger', function() {
             const args = childMethod.stub.args[0][0];
 
             expect(args.group).to.equal(group);
-        });
-
-        it('should override the log level of the logger if a matching groupname is found', () => {
-            const appName = _testValues.getString('appName');
-            const group = _testValues.getString('group');
-            const expectedLevel = _testValues.getString('level');
-            const loggerProps = {
-                level: 'trace'
-            };
-            const childMethod = _pinoMock.mocks.child;
-
-            _logger.configure(appName, {
-                levelOverrides: {
-                    [group]: expectedLevel
-                }
-            });
-
-            expect(childMethod.stub).to.not.have.been.called;
-            _logger.getLogger(group, loggerProps);
-
-            expect(childMethod.stub).to.have.been.calledOnce;
-            const args = childMethod.stub.args[0][0];
-
-            expect(args.level).to.equal(expectedLevel);
-        });
-
-        it('should respect wildcard settings in the level overrides list', () => {
-            const appName = _testValues.getString('appName');
-            const group = _testValues.getString('group');
-            const expectedLevel = _testValues.getString('level');
-            const loggerProps = {
-                level: 'trace'
-            };
-            const childMethod = _pinoMock.mocks.child;
-
-            _logger.configure(appName, {
-                levelOverrides: {
-                    'group*': expectedLevel
-                }
-            });
-
-            expect(childMethod.stub).to.not.have.been.called;
-            _logger.getLogger(group, loggerProps);
-
-            expect(childMethod.stub).to.have.been.calledOnce;
-            const args = childMethod.stub.args[0][0];
-
-            expect(args.level).to.equal(expectedLevel);
-        });
-
-        it('should use the level from the last applicable match in the list', () => {
-            const appName = _testValues.getString('appName');
-            const group = _testValues.getString('group');
-            const expectedLevel = _testValues.getString('level');
-            const loggerProps = {
-                level: 'trace'
-            };
-            const childMethod = _pinoMock.mocks.child;
-
-            _logger.configure(appName, {
-                levelOverrides: {
-                    'g*': _testValues.getString('level'),
-                    'gr*': _testValues.getString('level'),
-                    'group*': expectedLevel
-                }
-            });
-
-            expect(childMethod.stub).to.not.have.been.called;
-            _logger.getLogger(group, loggerProps);
-
-            expect(childMethod.stub).to.have.been.calledOnce;
-            const args = childMethod.stub.args[0][0];
-
-            expect(args.level).to.equal(expectedLevel);
-        });
-
-        it('should not apply any overrides if the logger if the override list is empty', () => {
-            const appName = _testValues.getString('appName');
-            const group = _testValues.getString('group');
-            const expectedLevel = _testValues.getString('level');
-            const loggerProps = {
-                level: expectedLevel
-            };
-            const childMethod = _pinoMock.mocks.child;
-
-            _logger.configure(appName, {
-                levelOverrides: {}
-            });
-
-            expect(childMethod.stub).to.not.have.been.called;
-            _logger.getLogger(group, loggerProps);
-
-            expect(childMethod.stub).to.have.been.calledOnce;
-            const args = childMethod.stub.args[0][0];
-
-            expect(args.level).to.equal(expectedLevel);
-        });
-
-        it('should not apply any overrides if none of the patterns match', () => {
-            const appName = _testValues.getString('appName');
-            const group = _testValues.getString('group');
-            const expectedLevel = _testValues.getString('level');
-            const loggerProps = {
-                level: expectedLevel
-            };
-            const childMethod = _pinoMock.mocks.child;
-
-            _logger.configure(appName, {
-                levelOverrides: {
-                    'f*': _testValues.getString('level'),
-                    'fo*': _testValues.getString('level'),
-                    'foo*': _testValues.getString('level')
-                }
-            });
-
-            expect(childMethod.stub).to.not.have.been.called;
-            _logger.getLogger(group, loggerProps);
-
-            expect(childMethod.stub).to.have.been.calledOnce;
-            const args = childMethod.stub.args[0][0];
-
-            expect(args.level).to.equal(expectedLevel);
-        });
-
-        describe('getLogger().child()', () => {
-            it('should override the log level of the logger if a matching groupname is found', () => {
-                const expectedLevel = _testValues.getString('level');
-                const childGroup = _testValues.getString('childGroup');
-                const logger = _logger
-                    .configure(_testValues.getString('appName'), {
-                        level: 'trace',
-                        levelOverrides: {
-                            [childGroup]: expectedLevel
-                        }
-                    })
-                    .getLogger(_testValues.getString('group'), {});
-
-                const childMethod = _pinoMock.mocks.child;
-                const loggerProps = {
-                    level: 'trace',
-                    group: childGroup
-                };
-
-                childMethod.reset();
-
-                logger.child(loggerProps);
-
-                expect(childMethod.stub).to.have.been.calledOnce;
-                const args = childMethod.stub.args[0][0];
-
-                expect(args.level).to.equal(expectedLevel);
-            });
-
-            it('should respect wildcard settings in the level overrides list', () => {
-                const expectedLevel = _testValues.getString('level');
-                const childGroup = _testValues.getString('childGroup');
-                const logger = _logger
-                    .configure(_testValues.getString('appName'), {
-                        level: 'trace',
-                        levelOverrides: {
-                            'childGroup*': expectedLevel
-                        }
-                    })
-                    .getLogger(_testValues.getString('group'), {});
-
-                const childMethod = _pinoMock.mocks.child;
-                const loggerProps = {
-                    level: 'trace',
-                    group: childGroup
-                };
-
-                childMethod.reset();
-
-                logger.child(loggerProps);
-
-                expect(childMethod.stub).to.have.been.calledOnce;
-                const args = childMethod.stub.args[0][0];
-
-                expect(args.level).to.equal(expectedLevel);
-            });
-
-            it('should use the level from the last applicable match in the list', () => {
-                const expectedLevel = _testValues.getString('level');
-                const childGroup = _testValues.getString('childGroup');
-                const logger = _logger
-                    .configure(_testValues.getString('appName'), {
-                        level: 'trace',
-                        levelOverrides: {
-                            'child*': _testValues.getString('level'),
-                            'childGr*': _testValues.getString('level'),
-                            'childGroup*': expectedLevel
-                        }
-                    })
-                    .getLogger(_testValues.getString('group'), {});
-
-                const childMethod = _pinoMock.mocks.child;
-                const loggerProps = {
-                    level: 'trace',
-                    group: childGroup
-                };
-
-                childMethod.reset();
-
-                logger.child(loggerProps);
-
-                expect(childMethod.stub).to.have.been.calledOnce;
-                const args = childMethod.stub.args[0][0];
-
-                expect(args.level).to.equal(expectedLevel);
-            });
-
-            it('should not apply any overrides if the logger if the override list is empty', () => {
-                const expectedLevel = _testValues.getString('level');
-                const childGroup = _testValues.getString('childGroup');
-                const logger = _logger
-                    .configure(_testValues.getString('appName'), {
-                        level: 'trace',
-                        levelOverrides: {}
-                    })
-                    .getLogger(_testValues.getString('group'), {});
-
-                const childMethod = _pinoMock.mocks.child;
-                const loggerProps = {
-                    level: expectedLevel,
-                    group: childGroup
-                };
-
-                childMethod.reset();
-
-                logger.child(loggerProps);
-
-                expect(childMethod.stub).to.have.been.calledOnce;
-                const args = childMethod.stub.args[0][0];
-
-                expect(args.level).to.equal(expectedLevel);
-            });
-
-            it('should not apply any overrides if none of the patterns match', () => {
-                const expectedLevel = _testValues.getString('level');
-                const childGroup = _testValues.getString('childGroup');
-                const logger = _logger
-                    .configure(_testValues.getString('appName'), {
-                        level: 'trace',
-                        levelOverrides: {
-                            'f*': _testValues.getString('level'),
-                            'foo*': _testValues.getString('level'),
-                            'foobar*': _testValues.getString('level')
-                        }
-                    })
-                    .getLogger(_testValues.getString('group'), {});
-
-                const childMethod = _pinoMock.mocks.child;
-                const loggerProps = {
-                    level: expectedLevel,
-                    group: childGroup
-                };
-
-                childMethod.reset();
-
-                logger.child(loggerProps);
-
-                expect(childMethod.stub).to.have.been.calledOnce;
-                const args = childMethod.stub.args[0][0];
-
-                expect(args.level).to.equal(expectedLevel);
-            });
         });
     });
 
