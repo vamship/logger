@@ -1,7 +1,6 @@
 'use strict';
 
 const _pino = require('pino');
-const { Minimatch } = require('minimatch');
 const { argValidator: _argValidator } = require('@vamship/arg-utils');
 
 const EMPTY_FUNC = () => {};

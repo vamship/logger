@@ -97,7 +97,7 @@ describe('logger', function() {
                 level,
                 extreme,
                 destination,
-                serializers,
+                serializers
             };
 
             expect(_pinoMock.ctor).to.not.have.been.called;
