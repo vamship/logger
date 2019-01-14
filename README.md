@@ -49,18 +49,6 @@ This library also provides singleton methods to enable/disable mocking, which
 is especially useful for writing tests, when logging statements could
 potentially interfere with test results.
 
-### Applying Log Filters
-
-When building applications that leverage several child libraries, it is
-sometimes desirable to be able to mute log statements from the dependent
-libraries. This is in some cases by using an environment variable to specify log
-levels (ex: [debug](https://github.com/visionmedia/debug)).
-
-This module allows specifying global overrides for log levels in dependent
-modules, eliminating the need for environment variables (and the challenges
-inherent with their use). However, these filters will only apply to logger
-objects and their children that are instantiated via this module.
-
 ## Installation
 
 This library can be installed using npm:
@@ -107,30 +95,6 @@ class User {
         logger.trace('Logger for user object initialized');
     }
 }
-```
-
-### Applying global log overrides
-
-#### index.js (application entry point):
-
-```
-const logger = require('@vamship/logger').logger
-                // Configure application wide logger
-                .configure('myApp', {
-                    level: 'debug',
-                    levelOverrides: {
-                        // Mute logs from any group starting with 'fooLib'
-                        'fooLib*': silent
-                    }
-                })
-                // Logger object for the main module
-                .getLogger('main');
-
-// Write your first log statement.
-logger.trace('Logger initialized');
-
-// Now load other modules.
-const user = require('./user');
 ```
 
 ### Third party modules
