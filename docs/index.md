@@ -11,3 +11,4 @@ Documentation for specific releases can be found here:
 ## [v1.4.0](./@vamship/logger/1.4.0/index.html)
 ## [v2.0.0](./@vamship/logger/2.0.0/index.html)
 ## [v4.0.0](./@vamship/logger/4.0.0/index.html)
+## [v4.2.4](./@vamship/logger/4.2.4/index.html)
