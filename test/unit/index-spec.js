@@ -10,7 +10,7 @@ const _rewire = require('rewire');
 const logger = require('../../src/logger');
 let _index = null;
 
-describe('index', function() {
+describe('index', function () {
     beforeEach(() => {
         _index = _rewire('../../src/index');
     });

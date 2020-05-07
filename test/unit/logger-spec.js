@@ -15,7 +15,7 @@ const { ArgError } = require('@vamship/error-types').args;
 
 let _logger = null;
 
-describe('logger', function() {
+describe('logger', function () {
     const LOG_LEVELS = [
         'silent',
         'trace',
@@ -23,7 +23,7 @@ describe('logger', function() {
         'info',
         'warn',
         'error',
-        'fatal'
+        'fatal',
     ];
     let _pinoMock = null;
 
@@ -88,7 +88,7 @@ describe('logger', function() {
             const serializers = {
                 mySerializer: () => {
                     return 'test';
-                }
+                },
             };
             const destinationMethod = _pinoMock.mocks.destination;
             const extremeMethod = _pinoMock.mocks.extreme;
@@ -97,7 +97,7 @@ describe('logger', function() {
                 level,
                 extreme,
                 destination,
-                serializers
+                serializers,
             };
 
             expect(_pinoMock.ctor).to.not.have.been.called;
@@ -117,7 +117,7 @@ describe('logger', function() {
             expect(_pinoMock.ctor.args[0][0]).to.deep.equal({
                 name,
                 level,
-                serializers
+                serializers,
             });
             expect(_pinoMock.ctor.args[0][1]).to.equal(
                 _pinoMock.__simpleDestination
@@ -231,7 +231,7 @@ describe('logger', function() {
                 const inputs = [
                     _testValues.getString('destination'),
                     _testValues.getString('destination'),
-                    _testValues.getString('destination')
+                    _testValues.getString('destination'),
                 ];
                 inputs.forEach((destination, index) => {
                     const name = _testValues.getString('appName');
@@ -268,7 +268,7 @@ describe('logger', function() {
             it('should map special strings to appropriate destinations', () => {
                 const inputs = {
                     'process.stdout': 1,
-                    'process.stderr': 2
+                    'process.stderr': 2,
                 };
                 Object.keys(inputs).forEach((key, index) => {
                     const name = _testValues.getString('appName');
@@ -316,7 +316,7 @@ describe('logger', function() {
                 const inputs = [
                     _testValues.getString('destination'),
                     _testValues.getString('destination'),
-                    _testValues.getString('destination')
+                    _testValues.getString('destination'),
                 ];
                 inputs.forEach((destination, index) => {
                     const name = _testValues.getString('appName');
@@ -388,7 +388,7 @@ describe('logger', function() {
             it('should map special strings to appropriate destinations', () => {
                 const inputs = {
                     'process.stdout': 1,
-                    'process.stderr': 2
+                    'process.stderr': 2,
                 };
                 Object.keys(inputs).forEach((key, index) => {
                     const name = _testValues.getString('appName');
@@ -551,7 +551,7 @@ describe('logger', function() {
             const args = childMethod.stub.args[0][0];
 
             expect(args).to.deep.equal({
-                group
+                group,
             });
         });
 
@@ -562,9 +562,9 @@ describe('logger', function() {
                 foo: 'bar',
                 abc: 123,
                 obj: {
-                    add: 'me'
+                    add: 'me',
                 },
-                level: 'trace'
+                level: 'trace',
             };
             const childMethod = _pinoMock.mocks.child;
 
@@ -578,7 +578,7 @@ describe('logger', function() {
 
             const expectedArgs = Object.assign(
                 {
-                    group
+                    group,
                 },
                 props
             );
@@ -589,7 +589,7 @@ describe('logger', function() {
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
             const loggerProps = {
-                group: 'this should not override the logger name'
+                group: 'this should not override the logger name',
             };
             const childMethod = _pinoMock.mocks.child;
 

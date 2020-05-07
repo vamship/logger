@@ -11,7 +11,7 @@ const LOG_LEVELS = [
     'info',
     'warn',
     'error',
-    'fatal'
+    'fatal',
 ];
 const MOCK_LOGGER = LOG_LEVELS.reduce((result, level) => {
     result[level] = EMPTY_FUNC;
@@ -42,7 +42,7 @@ module.exports = {
      *
      * This method is primarily intended for debugging/testing purposes.
      */
-    disableMock: function() {
+    disableMock: function () {
         _isMockEnabled = false;
     },
 
@@ -53,7 +53,7 @@ module.exports = {
      * This method is primarily intended for debugging/testing purposes where
      * log messages may have to be suppressed.
      */
-    enableMock: function() {
+    enableMock: function () {
         _isMockEnabled = true;
     },
 
@@ -88,7 +88,7 @@ module.exports = {
      * @return {module:logger} A reference to the current module, allowing for
      *         chaining of method calls.
      */
-    configure: function(name, options) {
+    configure: function (name, options) {
         _argValidator.checkString(name, 1, 'Invalid name (arg #1)');
 
         options = Object.assign({}, options);
@@ -127,7 +127,7 @@ module.exports = {
             {
                 name,
                 level: options.level,
-                serializers: options.serializers
+                serializers: options.serializers,
             },
             destination
         );
@@ -151,17 +151,17 @@ module.exports = {
      *         object will be a mock object that supports the logging methods,
      *         but does not actually perform any logging.
      */
-    getLogger: function(group, props) {
+    getLogger: function (group, props) {
         _argValidator.checkString(group, 1, 'Invalid group (arg #1)');
         if (!_isInitialized || _isMockEnabled) {
             // Already initialized. Return mock logger.
             return MOCK_LOGGER;
         }
         const loggerProps = Object.assign({}, props, {
-            group
+            group,
         });
 
         const child = _logger.child(loggerProps);
         return child;
-    }
+    },
 };
