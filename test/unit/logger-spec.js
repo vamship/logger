@@ -90,6 +90,9 @@ describe('logger', function () {
                     return 'test';
                 },
             };
+            const redact = new Array(5)
+                .fill(0)
+                .map((item, index) => _testValues.getString(`redact_${index}`));
             const destinationMethod = _pinoMock.mocks.destination;
             const extremeMethod = _pinoMock.mocks.extreme;
 
@@ -98,6 +101,7 @@ describe('logger', function () {
                 extreme,
                 destination,
                 serializers,
+                redact,
             };
 
             expect(_pinoMock.ctor).to.not.have.been.called;
@@ -118,6 +122,7 @@ describe('logger', function () {
                 name,
                 level,
                 serializers,
+                redact,
             });
             expect(_pinoMock.ctor.args[0][1]).to.equal(
                 _pinoMock.__simpleDestination
@@ -472,6 +477,22 @@ describe('logger', function () {
 
                 const args = _pinoMock.ctor.args[index][0];
                 expect(args.serializers).to.deep.equal({});
+            });
+        });
+
+        it('should use the default value for redact if a valid value is not specified', () => {
+            const inputs = _testValues.allButArray();
+
+            inputs.forEach((redact, index) => {
+                const name = _testValues.getString('appName');
+                const options = { redact };
+                _logger.configure(name, options);
+
+                //Reset the initialized flag
+                _logger.__set__('_isInitialized', false);
+
+                const args = _pinoMock.ctor.args[index][0];
+                expect(args.redact).to.deep.equal([]);
             });
         });
 

@@ -84,6 +84,9 @@ module.exports = {
      * @param {Object} [options.serializers={}] Specifies serializers that can
      *        be used to process log data before writing it to the target
      *        stream(s). If omitted, no special serializers will be applied.
+     * @param {Object} [options.redact=[]] A list of optional redactions to
+     *        apply to the output of the logger.
+     *
      *
      * @return {module:logger} A reference to the current module, allowing for
      *         chaining of method calls.
@@ -100,6 +103,9 @@ module.exports = {
         }
         if (!_argValidator.checkObject(options.serializers)) {
             options.serializers = {};
+        }
+        if (!_argValidator.checkArray(options.redact)) {
+            options.redact = [];
         }
 
         if (_isInitialized) {
@@ -128,6 +134,7 @@ module.exports = {
                 name,
                 level: options.level,
                 serializers: options.serializers,
+                redact: options.redact,
             },
             destination
         );
