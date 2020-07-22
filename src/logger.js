@@ -99,7 +99,7 @@ module.exports = {
             options.level = 'info';
         }
         if (!_argValidator.checkBoolean(options.extreme)) {
-            options.extreme = true;
+            options.sync = false;
         }
         if (!_argValidator.checkObject(options.serializers)) {
             options.serializers = {};
