@@ -130,7 +130,7 @@ module.exports = {
         } else if (_argValidator.checkString(options.destination)) {
             destination = _pino.destination({
                 dest: options.destination,
-                sync: !options.extreme
+                sync: !options.extreme,
             });
         } else {
             destination = _pino.destination({

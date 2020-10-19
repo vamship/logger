@@ -109,7 +109,7 @@ describe('logger', function () {
             expect(destinationMethod.stub).to.have.been.calledOnce;
             expect(destinationMethod.stub).to.have.been.calledWithExactly({
                 dest: destination,
-                sync: !extreme
+                sync: !extreme,
             });
 
             expect(_pinoMock.ctor).to.have.been.calledOnce;
@@ -248,8 +248,6 @@ describe('logger', function () {
                     const destination = 'process.stdout';
                     const options = { destination, extreme };
 
-                    const destinationMethod = _pinoMock.mocks.destination;
-
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     _logger.configure(name, options);
@@ -283,8 +281,6 @@ describe('logger', function () {
                     const destination = 'process.stderr';
                     const options = { destination, extreme };
 
-                    const destinationMethod = _pinoMock.mocks.destination;
-
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     _logger.configure(name, options);
@@ -317,8 +313,6 @@ describe('logger', function () {
                     const name = _testValues.getString('appName');
                     const destination = _testValues.getString('destination');
                     const options = { destination, extreme };
-
-                    const destinationMethod = _pinoMock.mocks.destination;
 
                     expect(destinationMethod.stub).to.not.have.been.called;
 
@@ -363,7 +357,7 @@ describe('logger', function () {
 
                 expect(destinationMethod.stub).to.have.been.calledWithExactly({
                     dest: destination,
-                    sync: true
+                    sync: true,
                 });
 
                 //Reset the initialized flag
