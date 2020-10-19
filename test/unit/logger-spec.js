@@ -32,18 +32,16 @@ describe('logger', function () {
             result[level] = _sinon.spy();
             return result;
         }, {});
-        const simpleDestination = {};
+        const destinationObject = {};
         const extremeDestination = {};
 
         _pinoMock = new ObjectMock(pino)
             .addMock('child', pino)
-            .addMock('destination', simpleDestination)
-            .addMock('extreme', extremeDestination);
-        _pinoMock.__simpleDestination = simpleDestination;
+            .addMock('destination', destinationObject);
+        _pinoMock.__destinationObject = destinationObject;
         _pinoMock.__extremeDestination = extremeDestination;
 
         _pinoMock.ctor.destination = _pinoMock.instance.destination;
-        _pinoMock.ctor.extreme = _pinoMock.instance.extreme;
 
         _logger = _rewire('../../src/logger');
         _logger.__set__('_pino', _pinoMock.ctor);
@@ -94,7 +92,6 @@ describe('logger', function () {
                 .fill(0)
                 .map((item, index) => _testValues.getString(`redact_${index}`));
             const destinationMethod = _pinoMock.mocks.destination;
-            const extremeMethod = _pinoMock.mocks.extreme;
 
             const options = {
                 level,
@@ -106,16 +103,14 @@ describe('logger', function () {
 
             expect(_pinoMock.ctor).to.not.have.been.called;
             expect(destinationMethod.stub).to.not.have.been.called;
-            expect(extremeMethod.stub).to.not.have.been.called;
 
             _logger.configure(name, options);
 
             expect(destinationMethod.stub).to.have.been.calledOnce;
-            expect(destinationMethod.stub).to.have.been.calledWithExactly(
-                destination
-            );
-
-            expect(extremeMethod.stub).to.not.have.been.called;
+            expect(destinationMethod.stub).to.have.been.calledWithExactly({
+                dest: destination,
+                sync: !extreme
+            });
 
             expect(_pinoMock.ctor).to.have.been.calledOnce;
             expect(_pinoMock.ctor.args[0][0]).to.deep.equal({
@@ -124,23 +119,36 @@ describe('logger', function () {
                 serializers,
                 redact,
             });
-            expect(_pinoMock.ctor.args[0][1]).to.equal(
-                _pinoMock.__simpleDestination
+            expect(_pinoMock.ctor.args[0][1]).to.deep.equal(
+                _pinoMock.__destinationObject
             );
         });
 
         it('should initialize the logger with defaults if the options object is not specified', () => {
             const inputs = _testValues.allButObject();
+            const destinationMethod = _pinoMock.mocks.destination;
 
             inputs.forEach((options, index) => {
                 const name = _testValues.getString('appName');
+
+                expect(destinationMethod.stub).to.not.have.been.called;
+
                 _logger.configure(name, options);
+
+                expect(destinationMethod.stub).to.have.been.calledOnce;
+                expect(destinationMethod.stub.args[0]).to.have.length(1);
+                expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+                    fd: process.stdout.fd,
+                    sync: true,
+                });
 
                 //Reset the initialized flag
                 _logger.__set__('_isInitialized', false);
 
                 const args = _pinoMock.ctor.args[index][0];
                 expect(args.level).to.equal('info');
+
+                destinationMethod.reset();
             });
         });
 
@@ -160,269 +168,178 @@ describe('logger', function () {
             });
         });
 
-        it('should pass object destinations to the constructor without using pino.destination or pino.extreme', () => {
+        it('should pass object destinations to the constructor without using pino.destination', () => {
             const inputs = [{}, {}, {}];
             inputs.forEach((destination, index) => {
                 const name = _testValues.getString('appName');
                 const options = { destination, extreme: false };
 
                 const destinationMethod = _pinoMock.mocks.destination;
-                const extremeMethod = _pinoMock.mocks.extreme;
 
                 expect(destinationMethod.stub).to.not.have.been.called;
-                expect(extremeMethod.stub).to.not.have.been.called;
 
                 _logger.configure(name, options);
 
                 expect(destinationMethod.stub).to.not.have.been.called;
-                expect(extremeMethod.stub).to.not.have.been.called;
 
                 //Reset the initialized flag
                 _logger.__set__('_isInitialized', false);
 
                 //Reset call counts
                 destinationMethod.reset();
-                extremeMethod.reset();
 
                 expect(_pinoMock.ctor.args[index][1]).to.equal(destination);
             });
         });
 
-        describe('[destination; extreme=false]', () => {
-            let extreme;
-            let destResponse;
+        describe('[extreme mode]', () => {
+            it('should apply the extreme flag to the destination if defined in the options', () => {
+                const inputs = [true, false];
+                const destinationMethod = _pinoMock.mocks.destination;
 
-            beforeEach(() => {
-                extreme = false;
-                destResponse = _pinoMock.__simpleDestination;
+                inputs.forEach((extreme, index) => {
+                    const name = _testValues.getString('appName');
+
+                    expect(destinationMethod.stub).to.not.have.been.called;
+
+                    _logger.configure(name, { extreme });
+
+                    expect(destinationMethod.stub).to.have.been.calledOnce;
+                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+                        fd: process.stdout.fd,
+                        sync: !extreme,
+                    });
+
+                    //Reset the initialized flag
+                    _logger.__set__('_isInitialized', false);
+
+                    destinationMethod.reset();
+                });
             });
 
-            it('should default the destination to "process.stdout"', () => {
-                const inputs = _testValues.allButSelected('string', 'object');
+            it('should not apply the extreme flag to the destination a destination object is specified', () => {
+                const inputs = [true, false];
+                const destinationMethod = _pinoMock.mocks.destination;
 
-                inputs.forEach((destination, index) => {
+                inputs.forEach((extreme, index) => {
                     const name = _testValues.getString('appName');
+                    const destination = {};
+
+                    expect(destinationMethod.stub).to.not.have.been.called;
+
+                    _logger.configure(name, { extreme, destination });
+
+                    expect(destinationMethod.stub).to.not.have.been.called;
+
+                    //Reset the initialized flag
+                    _logger.__set__('_isInitialized', false);
+
+                    expect(_pinoMock.ctor.args[index][1]).to.equal(destination);
+                });
+            });
+
+            it('should use the stdout file descriptor if the destination is "process.stdoout" ', () => {
+                const inputs = [true, false];
+                const destinationMethod = _pinoMock.mocks.destination;
+
+                inputs.forEach((extreme, index) => {
+                    const name = _testValues.getString('appName');
+                    const destination = 'process.stdout';
                     const options = { destination, extreme };
 
                     const destinationMethod = _pinoMock.mocks.destination;
-                    const extremeMethod = _pinoMock.mocks.extreme;
 
                     expect(destinationMethod.stub).to.not.have.been.called;
-                    expect(extremeMethod.stub).to.not.have.been.called;
 
                     _logger.configure(name, options);
 
                     expect(destinationMethod.stub).to.have.been.calledOnce;
-                    expect(extremeMethod.stub).to.not.have.been.called;
 
-                    expect(
-                        destinationMethod.stub
-                    ).to.have.been.calledWithExactly(1);
+                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+                        fd: process.stdout.fd,
+                        sync: !extreme,
+                    });
 
                     //Reset the initialized flag
                     _logger.__set__('_isInitialized', false);
 
                     //Reset call counts
                     destinationMethod.reset();
-                    extremeMethod.reset();
 
                     expect(_pinoMock.ctor.args[index][1]).to.equal(
-                        destResponse
+                        _pinoMock.__destinationObject
                     );
                 });
             });
 
-            it('should convert string destinations using pino.destination()', () => {
-                const inputs = [
-                    _testValues.getString('destination'),
-                    _testValues.getString('destination'),
-                    _testValues.getString('destination'),
-                ];
-                inputs.forEach((destination, index) => {
+            it('should use the stderr file descriptor if the destination is "process.stderr" ', () => {
+                const inputs = [true, false];
+                const destinationMethod = _pinoMock.mocks.destination;
+
+                inputs.forEach((extreme, index) => {
                     const name = _testValues.getString('appName');
+                    const destination = 'process.stderr';
                     const options = { destination, extreme };
 
                     const destinationMethod = _pinoMock.mocks.destination;
-                    const extremeMethod = _pinoMock.mocks.extreme;
 
                     expect(destinationMethod.stub).to.not.have.been.called;
-                    expect(extremeMethod.stub).to.not.have.been.called;
 
                     _logger.configure(name, options);
 
                     expect(destinationMethod.stub).to.have.been.calledOnce;
-                    expect(extremeMethod.stub).to.not.have.been.called;
 
-                    expect(
-                        destinationMethod.stub
-                    ).to.have.been.calledWithExactly(destination);
+                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+                        fd: process.stderr.fd,
+                        sync: !extreme,
+                    });
 
                     //Reset the initialized flag
                     _logger.__set__('_isInitialized', false);
 
                     //Reset call counts
                     destinationMethod.reset();
-                    extremeMethod.reset();
 
                     expect(_pinoMock.ctor.args[index][1]).to.equal(
-                        destResponse
+                        _pinoMock.__destinationObject
                     );
                 });
             });
 
-            it('should map special strings to appropriate destinations', () => {
-                const inputs = {
-                    'process.stdout': 1,
-                    'process.stderr': 2,
-                };
-                Object.keys(inputs).forEach((key, index) => {
+            it('should treat the destination as a file path if it not one of the standard values', () => {
+                const inputs = [true, false];
+                const destinationMethod = _pinoMock.mocks.destination;
+
+                inputs.forEach((extreme, index) => {
                     const name = _testValues.getString('appName');
-                    const options = { destination: key, extreme };
+                    const destination = _testValues.getString('destination');
+                    const options = { destination, extreme };
 
                     const destinationMethod = _pinoMock.mocks.destination;
-                    const extremeMethod = _pinoMock.mocks.extreme;
 
                     expect(destinationMethod.stub).to.not.have.been.called;
-                    expect(extremeMethod.stub).to.not.have.been.called;
 
                     _logger.configure(name, options);
 
                     expect(destinationMethod.stub).to.have.been.calledOnce;
-                    expect(extremeMethod.stub).to.not.have.been.called;
 
-                    expect(
-                        destinationMethod.stub
-                    ).to.have.been.calledWithExactly(inputs[key]);
-
-                    //Reset the initialized flag
-                    _logger.__set__('_isInitialized', false);
-
-                    //Reset call counts
-                    destinationMethod.reset();
-                    extremeMethod.reset();
-
-                    expect(_pinoMock.ctor.args[index][1]).to.equal(
-                        destResponse
-                    );
-                });
-            });
-        });
-
-        describe('[destination; extreme=true]', () => {
-            let extreme;
-            let destResponse;
-
-            beforeEach(() => {
-                extreme = true;
-                destResponse = _pinoMock.__extremeDestination;
-            });
-
-            it('should convert string destinations using pino.extreme()', () => {
-                const inputs = [
-                    _testValues.getString('destination'),
-                    _testValues.getString('destination'),
-                    _testValues.getString('destination'),
-                ];
-                inputs.forEach((destination, index) => {
-                    const name = _testValues.getString('appName');
-                    const options = { destination, extreme };
-
-                    const destinationMethod = _pinoMock.mocks.destination;
-                    const extremeMethod = _pinoMock.mocks.extreme;
-
-                    expect(destinationMethod.stub).to.not.have.been.called;
-                    expect(extremeMethod.stub).to.not.have.been.called;
-
-                    _logger.configure(name, options);
-
-                    expect(extremeMethod.stub).to.have.been.calledOnce;
-                    expect(destinationMethod.stub).to.not.have.been.called;
-
-                    expect(extremeMethod.stub).to.have.been.calledWithExactly(
-                        destination
-                    );
+                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+                        dest: destination,
+                        sync: !extreme,
+                    });
 
                     //Reset the initialized flag
                     _logger.__set__('_isInitialized', false);
 
                     //Reset call counts
                     destinationMethod.reset();
-                    extremeMethod.reset();
 
                     expect(_pinoMock.ctor.args[index][1]).to.equal(
-                        destResponse
-                    );
-                });
-            });
-
-            it('should default the destination to "process.stdout"', () => {
-                const inputs = _testValues.allButSelected('string', 'object');
-
-                inputs.forEach((destination, index) => {
-                    const name = _testValues.getString('appName');
-                    const options = { destination, extreme };
-
-                    const destinationMethod = _pinoMock.mocks.destination;
-                    const extremeMethod = _pinoMock.mocks.extreme;
-
-                    expect(destinationMethod.stub).to.not.have.been.called;
-                    expect(extremeMethod.stub).to.not.have.been.called;
-
-                    _logger.configure(name, options);
-
-                    expect(extremeMethod.stub).to.have.been.calledOnce;
-                    expect(destinationMethod.stub).to.not.have.been.called;
-
-                    expect(extremeMethod.stub).to.have.been.calledWithExactly(
-                        1
-                    );
-
-                    //Reset the initialized flag
-                    _logger.__set__('_isInitialized', false);
-
-                    //Reset call counts
-                    destinationMethod.reset();
-                    extremeMethod.reset();
-
-                    expect(_pinoMock.ctor.args[index][1]).to.equal(
-                        destResponse
-                    );
-                });
-            });
-
-            it('should map special strings to appropriate destinations', () => {
-                const inputs = {
-                    'process.stdout': 1,
-                    'process.stderr': 2,
-                };
-                Object.keys(inputs).forEach((key, index) => {
-                    const name = _testValues.getString('appName');
-                    const options = { destination: key, extreme };
-
-                    const destinationMethod = _pinoMock.mocks.destination;
-                    const extremeMethod = _pinoMock.mocks.extreme;
-
-                    expect(extremeMethod.stub).to.not.have.been.called;
-                    expect(destinationMethod.stub).to.not.have.been.called;
-
-                    _logger.configure(name, options);
-
-                    expect(extremeMethod.stub).to.have.been.calledOnce;
-                    expect(destinationMethod.stub).to.not.have.been.called;
-
-                    expect(extremeMethod.stub).to.have.been.calledWithExactly(
-                        inputs[key]
-                    );
-
-                    //Reset the initialized flag
-                    _logger.__set__('_isInitialized', false);
-
-                    //Reset call counts
-                    destinationMethod.reset();
-                    extremeMethod.reset();
-
-                    expect(_pinoMock.ctor.args[index][1]).to.equal(
-                        destResponse
+                        _pinoMock.__destinationObject
                     );
                 });
             });
@@ -437,29 +354,26 @@ describe('logger', function () {
                 const options = { destination, extreme };
 
                 const destinationMethod = _pinoMock.mocks.destination;
-                const extremeMethod = _pinoMock.mocks.extreme;
 
-                expect(extremeMethod.stub).to.not.have.been.called;
                 expect(destinationMethod.stub).to.not.have.been.called;
 
                 _logger.configure(name, options);
 
-                expect(extremeMethod.stub).to.have.been.calledOnce;
-                expect(destinationMethod.stub).to.not.have.been.called;
+                expect(destinationMethod.stub).to.have.been.calledOnce;
 
-                expect(extremeMethod.stub).to.have.been.calledWithExactly(
-                    destination
-                );
+                expect(destinationMethod.stub).to.have.been.calledWithExactly({
+                    dest: destination,
+                    sync: true
+                });
 
                 //Reset the initialized flag
                 _logger.__set__('_isInitialized', false);
 
                 //Reset call counts
                 destinationMethod.reset();
-                extremeMethod.reset();
 
                 expect(_pinoMock.ctor.args[index][1]).to.equal(
-                    _pinoMock.__extremeDestination
+                    _pinoMock.__destinationObject
                 );
             });
         });

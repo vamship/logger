@@ -99,7 +99,7 @@ module.exports = {
             options.level = 'info';
         }
         if (!_argValidator.checkBoolean(options.extreme)) {
-            options.sync = false;
+            options.extreme = false;
         }
         if (!_argValidator.checkObject(options.serializers)) {
             options.serializers = {};
@@ -113,20 +113,30 @@ module.exports = {
             return module.exports;
         }
 
-        const destMapper = options.extreme ? _pino.extreme : _pino.destination;
-
         let destination = undefined;
 
         if (_argValidator.checkObject(options.destination)) {
             destination = options.destination;
         } else if (options.destination === 'process.stdout') {
-            destination = destMapper(1);
+            destination = _pino.destination({
+                fd: process.stdout.fd,
+                sync: !options.extreme,
+            });
         } else if (options.destination === 'process.stderr') {
-            destination = destMapper(2);
+            destination = _pino.destination({
+                fd: process.stderr.fd,
+                sync: !options.extreme,
+            });
         } else if (_argValidator.checkString(options.destination)) {
-            destination = destMapper(options.destination);
+            destination = _pino.destination({
+                dest: options.destination,
+                sync: !options.extreme
+            });
         } else {
-            destination = destMapper(1);
+            destination = _pino.destination({
+                fd: process.stdout.fd,
+                sync: !options.extreme,
+            });
         }
 
         _logger = _pino(
