@@ -18,7 +18,6 @@
     "license": "MIT",
     "devDependencies": {
         "@vamship/build-utils": "^1.0.0",
-        "@vamship/error-types": "^1.7.15",
         "@vamship/test-utils": "^2.5.4",
         "ansi-colors": "^4.1.1",
         "chai": "^4.3.4",
