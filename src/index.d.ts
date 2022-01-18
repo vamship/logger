@@ -5,32 +5,32 @@ export interface ILogger {
     /**
      * Trace logger method.
      */
-    trace: (message: Object|string, args?: Object|string) => void;
+    trace: (message: Object | string, args?: Object | string) => void;
 
     /**
      * Debug logger method.
      */
-    debug: (message: Object|string, args?: Object|string) => void;
+    debug: (message: Object | string, args?: Object | string) => void;
 
     /**
      * Info logger method.
      */
-    info: (message: Object|string, args?: Object|string) => void;
+    info: (message: Object | string, args?: Object | string) => void;
 
     /**
      * Warn logger method.
      */
-    warn: (message: Object|string, args?: Object|string) => void;
+    warn: (message: Object | string, args?: Object | string) => void;
 
     /**
      * Error logger method.
      */
-    error: (message: Object|string, args?: Object|string) => void;
+    error: (message: Object | string, args?: Object | string) => void;
 
     /**
      * Fatal logger method.
      */
-    fatal: (message: Object|string, args?: Object|string) => void;
+    fatal: (message: Object | string, args?: Object | string) => void;
 
     /**
      * Child method.
@@ -57,12 +57,12 @@ export interface ILoggerOptions {
      */
     level?: string;
 
-   /**
-    * When enabled, optimizes the logger for speed by buffering messages and
-    * writing them in larger chunks. See
-    * [this link]{@link https://github.com/pinojs/pino/blob/master/docs/extreme.md}
-    * for more information. Defaults to true.
-    */
+    /**
+     * When enabled, optimizes the logger for speed by buffering messages and
+     * writing them in larger chunks. See
+     * [this link]{@link https://github.com/pinojs/pino/blob/master/docs/extreme.md}
+     * for more information. Defaults to true.
+     */
     extreme?: boolean;
 
     /**
@@ -74,7 +74,7 @@ export interface ILoggerOptions {
      * - 'process.stderr': The output will be written to STDERR
      * Defaults to process.stdout
      */
-    destination?: Object|String;
+    destination?: Object | String;
 
     /**
      * Specifies serializers that can be used to process log data before writing
@@ -82,7 +82,7 @@ export interface ILoggerOptions {
      * applied.
      */
     serializers?: Array<unknown>;
-    
+
     /**
      * A list of optional redactions to apply to the output of the logger
      */
@@ -111,4 +111,7 @@ export declare function configure(name: string, options: ILoggerOptions): void;
  * @param group The name of the log group.
  * @param props A set of key/value pairs that add metadata to the logger.
  */
-export declare function getLogger(group: string, props?: Record<string, unknown>): ILogger;
+export declare function getLogger(
+    group: string,
+    props?: Record<string, unknown>
+): ILogger;
