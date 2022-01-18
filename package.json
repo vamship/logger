@@ -33,6 +33,7 @@
     "peerDependencies": {
         "@vamship/error-types": "^1.7.19"
     },
+    "types": "src/index.d.ts",
     "repository": {
         "type": "git",
         "url": "https://github.com/vamship/logger.git"
