@@ -103,7 +103,14 @@ export interface ILoggerOptions {
  * @return A reference to the current module, allowing for chaining of method
  * calls.
  */
-export declare function configure(name: string, options: ILoggerOptions): void;
+export declare function configure(
+    name: string,
+    options: ILoggerOptions
+): {
+    disableMock: () => void;
+    enableMock: () => void;
+    getLogger: (group: string, props?: Record<string, unknown>) => void;
+};
 
 /**
  * Returns a preconfigured logger for the specified module.
