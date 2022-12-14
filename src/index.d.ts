@@ -109,7 +109,7 @@ export declare function configure(
 ): {
     disableMock: () => void;
     enableMock: () => void;
-    getLogger: (group: string, props?: Record<string, unknown>) => void;
+    getLogger: (group: string, props?: Record<string, unknown>) => ILogger;
 };
 
 /**
