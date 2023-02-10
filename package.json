@@ -1,6 +1,6 @@
 {
     "name": "@vamship/logger",
-    "version": "4.3.13",
+    "version": "4.3.14",
     "description": "Wraps a logger object with some utility methods for initialization and debugging",
     "main": "src/index.js",
     "scripts": {
@@ -28,7 +28,7 @@
     "dependencies": {
         "@vamship/arg-utils": "^2.4.19",
         "minimatch": "^3.0.4",
-        "pino": "^7.6.3"
+        "pino": "^8.9.0"
     },
     "peerDependencies": {
         "@vamship/error-types": "^1.7.20"
