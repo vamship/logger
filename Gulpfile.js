@@ -11,9 +11,9 @@ const { Project, taskBuilders } = require('@vamship/build-utils');
 
 const project = new Project(require('./package.json'));
 
-const projectInfo = `${_colors.cyan.bold(project.name)} (${_colors.blue(
-    project.projectType
-)}, ${_colors.green(project.language)})`;
+const projectInfo = `${_colors.cyan(
+    _colors.bold(project.name)
+)} (${_colors.blue(project.projectType)}, ${_colors.green(project.language)})`;
 
 _log.info(`Initializing tasks for project: ${projectInfo}`);
 
