@@ -1,6 +1,4 @@
-'use strict';
-
 /**
  * Utilities for creating and configuring logger objects.
  */
-module.exports = require('./logger');
+export * as default from './logger.js';
