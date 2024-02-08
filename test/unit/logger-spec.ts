@@ -6,581 +6,605 @@ import 'mocha';
 _useWithChai(_sinonChai);
 _useWithChai(_chaiAsPromised);
 
-// import { testValues as _testValues, ObjectMock } from '@vamship/test-utils';
+import { stub } from 'sinon';
+import _esmock from 'esmock';
+
+import {
+    testValues as _testValues,
+    ObjectMock,
+    MockImportHelper,
+} from '@vamship/test-utils';
+import {
+    LogManager,
+    ILogger,
+    ILoggerOptions,
+    ObjectSerializer,
+} from '../../src/logger.js';
 // import { ArgError } from '@vamship/error-types';
 
-describe('logger', function () {
-//    const LOG_LEVELS = [
-//        'silent',
-//        'trace',
-//        'debug',
-//        'info',
-//        'warn',
-//        'error',
-//        'fatal',
-//    ];
-//    let _pinoMock = null;
+describe.only('logger', function () {
+    const LOG_LEVELS = [
+        'silent',
+        'trace',
+        'debug',
+        'info',
+        'warn',
+        'error',
+        'fatal',
+    ];
 
-//    beforeEach(function() {
-//        const pino = LOG_LEVELS.reduce((result, level) => {
-//            result[level] = _sinon.spy();
-//            return result;
-//        }, {});
-//        const destinationObject = {};
-//        const extremeDestination = {};
+    type TargetModule = typeof LogManager;
 
-//        _pinoMock = new ObjectMock(pino)
-//            .addMock('child', pino)
-//            .addMock('destination', destinationObject);
-//        _pinoMock.__destinationObject = destinationObject;
-//        _pinoMock.__extremeDestination = extremeDestination;
+    type ImportResult = {
+        testTarget: TargetModule;
+        loggerMock: ILogger;
+    };
 
-//        _pinoMock.ctor.destination = _pinoMock.instance.destination;
+    async function _import(): Promise<ImportResult> {
+        const destinationObject = {};
+        const extremeDestination = {};
+        const loggerMock: ObjectMock<ILogger> = new ObjectMock<ILogger>(
+            undefined,
+        )
+            .addMock('child', () => loggerMock)
+            .addMock('destination', destinationObject);
 
-//        _logger = _rewire('../../src/logger');
-//        _logger.__set__('_pino', _pinoMock.ctor);
+        LOG_LEVELS.reduce(
+            (result, level) => result.addMock(level, stub()),
+            loggerMock,
+        );
 
-//        //Reset the initialized flag
-//        _logger.__set__('_isInitialized', false);
-//    });
-    it('should have unit tests', function () {
-        //TODO: DELETE THIS!!
+        const importHelper = new MockImportHelper<TargetModule>(
+            'project://src/logger.js',
+            {
+                pino: loggerMock.ctor,
+            },
+            import.meta.resolve('../../../working'),
+        );
 
-        expect(true).to.be.true;
+        const testTarget = await _esmock(
+            importHelper.importPath,
+            importHelper.getLibs(),
+            importHelper.getGlobals(),
+        );
+
+        return { testTarget, loggerMock };
+    }
+
+    describe('[init]', function () {
+        it('should expose the necessary fields and methods', async function () {
+            const { testTarget } = await _import();
+
+            // Duck type checking because esmock messes with the prototype chain
+            expect(testTarget.configure).to.be.a('function');
+            expect(testTarget.enableMock).to.be.a('function');
+            expect(testTarget.disableMock).to.be.a('function');
+        });
     });
 
-//    describe('[init]', function () {
-//        it('should expose the necessary fields and methods', async function () {
-//            expect(_logger.configure).to.be.a('function');
-//            expect(_logger.getLogger).to.be.a('function');
-//            expect(_logger.enableMock).to.be.a('function');
-//            expect(_logger.disableMock).to.be.a('function');
-//        });
-//    });
-
-//    describe('configure()', function () {
-//        it('should throw an error if invoked without a valid name', async function () {
-//            const message = 'Invalid name (arg #1)';
-//            _testValues.allButString('').forEach((name) => {
-//                const wrapper = () => {
-//                    _logger.configure(name);
-//                };
-
-//                expect(wrapper).to.throw(ArgError, message);
-//            });
-//        });
-
-//        it('should return a reference to the logger module when invoked', async function () {
-//            const name = _testValues.getString('appName');
-//            const ret = _logger.configure(name);
-
-//            expect(ret).to.equal(_logger);
-//        });
-
-//        it('should initialize the logger object with the correct parameters', async function () {
-//            const name = _testValues.getString('appName');
-//            const level = 'debug';
-//            const extreme = false;
-//            const destination = _testValues.getString('destination');
-//            const serializers = {
-//                mySerializer: () => {
-//                    return 'test';
-//                },
-//            };
-//            const redact = new Array(5)
-//                .fill(0)
-//                .map((item, index) => _testValues.getString(`redact_${index}`));
-//            const destinationMethod = _pinoMock.mocks.destination;
-
-//            const options = {
-//                level,
-//                extreme,
-//                destination,
-//                serializers,
-//                redact,
-//            };
-
-//            expect(_pinoMock.ctor).to.not.have.been.called;
-//            expect(destinationMethod.stub).to.not.have.been.called;
-
-//            _logger.configure(name, options);
-
-//            expect(destinationMethod.stub).to.have.been.calledOnce;
-//            expect(destinationMethod.stub).to.have.been.calledWithExactly({
-//                dest: destination,
-//                sync: !extreme,
-//            });
-
-//            expect(_pinoMock.ctor).to.have.been.calledOnce;
-//            expect(_pinoMock.ctor.args[0][0]).to.deep.equal({
-//                name,
-//                level,
-//                serializers,
-//                redact,
-//            });
-//            expect(_pinoMock.ctor.args[0][1]).to.deep.equal(
-//                _pinoMock.__destinationObject
-//            );
-//        });
-
-//        it('should initialize the logger with defaults if the options object is not specified', async function () {
-//            const inputs = _testValues.allButObject();
-//            const destinationMethod = _pinoMock.mocks.destination;
-
-//            inputs.forEach((options, index) => {
-//                const name = _testValues.getString('appName');
-
-//                expect(destinationMethod.stub).to.not.have.been.called;
-
-//                _logger.configure(name, options);
-
-//                expect(destinationMethod.stub).to.have.been.calledOnce;
-//                expect(destinationMethod.stub.args[0]).to.have.length(1);
-//                expect(destinationMethod.stub.args[0][0]).to.deep.equal({
-//                    fd: process.stdout.fd,
-//                    sync: true,
-//                });
-
-//                //Reset the initialized flag
-//                _logger.__set__('_isInitialized', false);
-
-//                const args = _pinoMock.ctor.args[index][0];
-//                expect(args.level).to.equal('info');
-
-//                destinationMethod.reset();
-//            });
-//        });
+    // describe('configure()', function () {
+    //        it('should throw an error if invoked without a valid name', async function () {
+    //            const message = 'Invalid name (arg #1)';
+    //            _testValues.allButString('').forEach((name) => {
+    //                const wrapper = () => {
+    //                    _logger.configure(name);
+    //                };
+
+    //                expect(wrapper).to.throw(ArgError, message);
+    //            });
+    //        });
+
+    //        it('should return a reference to the logger module when invoked', async function () {
+    //            const name = _testValues.getString('appName');
+    //            const ret = _logger.configure(name);
+
+    //            expect(ret).to.equal(_logger);
+    //        });
+
+    //        it('should initialize the logger object with the correct parameters', async function () {
+    //            const name = _testValues.getString('appName');
+    //            const level = 'debug';
+    //            const extreme = false;
+    //            const destination = _testValues.getString('destination');
+    //            const serializers = {
+    //                mySerializer: () => {
+    //                    return 'test';
+    //                },
+    //            };
+    //            const redact = new Array(5)
+    //                .fill(0)
+    //                .map((item, index) => _testValues.getString(`redact_${index}`));
+    //            const destinationMethod = _pinoMock.mocks.destination;
+
+    //            const options = {
+    //                level,
+    //                extreme,
+    //                destination,
+    //                serializers,
+    //                redact,
+    //            };
+
+    //            expect(_pinoMock.ctor).to.not.have.been.called;
+    //            expect(destinationMethod.stub).to.not.have.been.called;
+
+    //            _logger.configure(name, options);
+
+    //            expect(destinationMethod.stub).to.have.been.calledOnce;
+    //            expect(destinationMethod.stub).to.have.been.calledWithExactly({
+    //                dest: destination,
+    //                sync: !extreme,
+    //            });
+
+    //            expect(_pinoMock.ctor).to.have.been.calledOnce;
+    //            expect(_pinoMock.ctor.args[0][0]).to.deep.equal({
+    //                name,
+    //                level,
+    //                serializers,
+    //                redact,
+    //            });
+    //            expect(_pinoMock.ctor.args[0][1]).to.deep.equal(
+    //                _pinoMock.__destinationObject
+    //            );
+    //        });
+
+    //        it('should initialize the logger with defaults if the options object is not specified', async function () {
+    //            const inputs = _testValues.allButObject();
+    //            const destinationMethod = _pinoMock.mocks.destination;
+
+    //            inputs.forEach((options, index) => {
+    //                const name = _testValues.getString('appName');
+
+    //                expect(destinationMethod.stub).to.not.have.been.called;
+
+    //                _logger.configure(name, options);
+
+    //                expect(destinationMethod.stub).to.have.been.calledOnce;
+    //                expect(destinationMethod.stub.args[0]).to.have.length(1);
+    //                expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+    //                    fd: process.stdout.fd,
+    //                    sync: true,
+    //                });
+
+    //                //Reset the initialized flag
+    //                _logger.__set__('_isInitialized', false);
+
+    //                const args = _pinoMock.ctor.args[index][0];
+    //                expect(args.level).to.equal('info');
+
+    //                destinationMethod.reset();
+    //            });
+    //        });
+
+    //        it('should use the default log level if a valid log level is not specified', async function () {
+    //            const inputs = _testValues.allButString('foo', 'bar', '');
 
-//        it('should use the default log level if a valid log level is not specified', async function () {
-//            const inputs = _testValues.allButString('foo', 'bar', '');
+    //            inputs.forEach((level, index) => {
+    //                const name = _testValues.getString('appName');
+    //                const options = { level };
+    //                _logger.configure(name, options);
+
+    //                //Reset the initialized flag
+    //                _logger.__set__('_isInitialized', false);
 
-//            inputs.forEach((level, index) => {
-//                const name = _testValues.getString('appName');
-//                const options = { level };
-//                _logger.configure(name, options);
+    //                const args = _pinoMock.ctor.args[index][0];
+    //                expect(args.level).to.equal('info');
+    //            });
+    //        });
 
-//                //Reset the initialized flag
-//                _logger.__set__('_isInitialized', false);
+    //        it('should pass object destinations to the constructor without using pino.destination', async function () {
+    //            const inputs = [{}, {}, {}];
+    //            inputs.forEach((destination, index) => {
+    //                const name = _testValues.getString('appName');
+    //                const options = { destination, extreme: false };
 
-//                const args = _pinoMock.ctor.args[index][0];
-//                expect(args.level).to.equal('info');
-//            });
-//        });
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//        it('should pass object destinations to the constructor without using pino.destination', async function () {
-//            const inputs = [{}, {}, {}];
-//            inputs.forEach((destination, index) => {
-//                const name = _testValues.getString('appName');
-//                const options = { destination, extreme: false };
+    //                expect(destinationMethod.stub).to.not.have.been.called;
 
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                _logger.configure(name, options);
 
-//                expect(destinationMethod.stub).to.not.have.been.called;
+    //                expect(destinationMethod.stub).to.not.have.been.called;
 
-//                _logger.configure(name, options);
+    //                //Reset the initialized flag
+    //                _logger.__set__('_isInitialized', false);
 
-//                expect(destinationMethod.stub).to.not.have.been.called;
+    //                //Reset call counts
+    //                destinationMethod.reset();
 
-//                //Reset the initialized flag
-//                _logger.__set__('_isInitialized', false);
+    //                expect(_pinoMock.ctor.args[index][1]).to.equal(destination);
+    //            });
+    //        });
 
-//                //Reset call counts
-//                destinationMethod.reset();
+    //        describe('[extreme mode]', function () {
+    //            it('should apply the extreme flag to the destination if defined in the options', async function () {
+    //                const inputs = [true, false];
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//                expect(_pinoMock.ctor.args[index][1]).to.equal(destination);
-//            });
-//        });
+    //                inputs.forEach((extreme, index) => {
+    //                    const name = _testValues.getString('appName');
 
-//        describe('[extreme mode]', function () {
-//            it('should apply the extreme flag to the destination if defined in the options', async function () {
-//                const inputs = [true, false];
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                    expect(destinationMethod.stub).to.not.have.been.called;
 
-//                inputs.forEach((extreme, index) => {
-//                    const name = _testValues.getString('appName');
+    //                    _logger.configure(name, { extreme });
 
-//                    expect(destinationMethod.stub).to.not.have.been.called;
+    //                    expect(destinationMethod.stub).to.have.been.calledOnce;
+    //                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+    //                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+    //                        fd: process.stdout.fd,
+    //                        sync: !extreme,
+    //                    });
 
-//                    _logger.configure(name, { extreme });
+    //                    //Reset the initialized flag
+    //                    _logger.__set__('_isInitialized', false);
 
-//                    expect(destinationMethod.stub).to.have.been.calledOnce;
-//                    expect(destinationMethod.stub.args[0]).to.have.length(1);
-//                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
-//                        fd: process.stdout.fd,
-//                        sync: !extreme,
-//                    });
+    //                    destinationMethod.reset();
+    //                });
+    //            });
 
-//                    //Reset the initialized flag
-//                    _logger.__set__('_isInitialized', false);
+    //            it('should not apply the extreme flag to the destination a destination object is specified', async function () {
+    //                const inputs = [true, false];
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//                    destinationMethod.reset();
-//                });
-//            });
+    //                inputs.forEach((extreme, index) => {
+    //                    const name = _testValues.getString('appName');
+    //                    const destination = {};
 
-//            it('should not apply the extreme flag to the destination a destination object is specified', async function () {
-//                const inputs = [true, false];
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                    expect(destinationMethod.stub).to.not.have.been.called;
 
-//                inputs.forEach((extreme, index) => {
-//                    const name = _testValues.getString('appName');
-//                    const destination = {};
+    //                    _logger.configure(name, { extreme, destination });
 
-//                    expect(destinationMethod.stub).to.not.have.been.called;
+    //                    expect(destinationMethod.stub).to.not.have.been.called;
 
-//                    _logger.configure(name, { extreme, destination });
+    //                    //Reset the initialized flag
+    //                    _logger.__set__('_isInitialized', false);
 
-//                    expect(destinationMethod.stub).to.not.have.been.called;
+    //                    expect(_pinoMock.ctor.args[index][1]).to.equal(destination);
+    //                });
+    //            });
 
-//                    //Reset the initialized flag
-//                    _logger.__set__('_isInitialized', false);
+    //            it('should use the stdout file descriptor if the destination is "process.stdoout" ', async function () {
+    //                const inputs = [true, false];
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//                    expect(_pinoMock.ctor.args[index][1]).to.equal(destination);
-//                });
-//            });
+    //                inputs.forEach((extreme, index) => {
+    //                    const name = _testValues.getString('appName');
+    //                    const destination = 'process.stdout';
+    //                    const options = { destination, extreme };
 
-//            it('should use the stdout file descriptor if the destination is "process.stdoout" ', async function () {
-//                const inputs = [true, false];
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                    expect(destinationMethod.stub).to.not.have.been.called;
 
-//                inputs.forEach((extreme, index) => {
-//                    const name = _testValues.getString('appName');
-//                    const destination = 'process.stdout';
-//                    const options = { destination, extreme };
+    //                    _logger.configure(name, options);
 
-//                    expect(destinationMethod.stub).to.not.have.been.called;
+    //                    expect(destinationMethod.stub).to.have.been.calledOnce;
 
-//                    _logger.configure(name, options);
+    //                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+    //                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+    //                        fd: process.stdout.fd,
+    //                        sync: !extreme,
+    //                    });
 
-//                    expect(destinationMethod.stub).to.have.been.calledOnce;
+    //                    //Reset the initialized flag
+    //                    _logger.__set__('_isInitialized', false);
 
-//                    expect(destinationMethod.stub.args[0]).to.have.length(1);
-//                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
-//                        fd: process.stdout.fd,
-//                        sync: !extreme,
-//                    });
+    //                    //Reset call counts
+    //                    destinationMethod.reset();
 
-//                    //Reset the initialized flag
-//                    _logger.__set__('_isInitialized', false);
+    //                    expect(_pinoMock.ctor.args[index][1]).to.equal(
+    //                        _pinoMock.__destinationObject
+    //                    );
+    //                });
+    //            });
 
-//                    //Reset call counts
-//                    destinationMethod.reset();
+    //            it('should use the stderr file descriptor if the destination is "process.stderr" ', async function () {
+    //                const inputs = [true, false];
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//                    expect(_pinoMock.ctor.args[index][1]).to.equal(
-//                        _pinoMock.__destinationObject
-//                    );
-//                });
-//            });
+    //                inputs.forEach((extreme, index) => {
+    //                    const name = _testValues.getString('appName');
+    //                    const destination = 'process.stderr';
+    //                    const options = { destination, extreme };
 
-//            it('should use the stderr file descriptor if the destination is "process.stderr" ', async function () {
-//                const inputs = [true, false];
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                    expect(destinationMethod.stub).to.not.have.been.called;
 
-//                inputs.forEach((extreme, index) => {
-//                    const name = _testValues.getString('appName');
-//                    const destination = 'process.stderr';
-//                    const options = { destination, extreme };
+    //                    _logger.configure(name, options);
 
-//                    expect(destinationMethod.stub).to.not.have.been.called;
+    //                    expect(destinationMethod.stub).to.have.been.calledOnce;
 
-//                    _logger.configure(name, options);
+    //                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+    //                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+    //                        fd: process.stderr.fd,
+    //                        sync: !extreme,
+    //                    });
 
-//                    expect(destinationMethod.stub).to.have.been.calledOnce;
+    //                    //Reset the initialized flag
+    //                    _logger.__set__('_isInitialized', false);
 
-//                    expect(destinationMethod.stub.args[0]).to.have.length(1);
-//                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
-//                        fd: process.stderr.fd,
-//                        sync: !extreme,
-//                    });
+    //                    //Reset call counts
+    //                    destinationMethod.reset();
 
-//                    //Reset the initialized flag
-//                    _logger.__set__('_isInitialized', false);
+    //                    expect(_pinoMock.ctor.args[index][1]).to.equal(
+    //                        _pinoMock.__destinationObject
+    //                    );
+    //                });
+    //            });
 
-//                    //Reset call counts
-//                    destinationMethod.reset();
+    //            it('should treat the destination as a file path if it not one of the standard values', async function () {
+    //                const inputs = [true, false];
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//                    expect(_pinoMock.ctor.args[index][1]).to.equal(
-//                        _pinoMock.__destinationObject
-//                    );
-//                });
-//            });
+    //                inputs.forEach((extreme, index) => {
+    //                    const name = _testValues.getString('appName');
+    //                    const destination = _testValues.getString('destination');
+    //                    const options = { destination, extreme };
 
-//            it('should treat the destination as a file path if it not one of the standard values', async function () {
-//                const inputs = [true, false];
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                    expect(destinationMethod.stub).to.not.have.been.called;
 
-//                inputs.forEach((extreme, index) => {
-//                    const name = _testValues.getString('appName');
-//                    const destination = _testValues.getString('destination');
-//                    const options = { destination, extreme };
+    //                    _logger.configure(name, options);
 
-//                    expect(destinationMethod.stub).to.not.have.been.called;
+    //                    expect(destinationMethod.stub).to.have.been.calledOnce;
 
-//                    _logger.configure(name, options);
+    //                    expect(destinationMethod.stub.args[0]).to.have.length(1);
+    //                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
+    //                        dest: destination,
+    //                        sync: !extreme,
+    //                    });
 
-//                    expect(destinationMethod.stub).to.have.been.calledOnce;
+    //                    //Reset the initialized flag
+    //                    _logger.__set__('_isInitialized', false);
 
-//                    expect(destinationMethod.stub.args[0]).to.have.length(1);
-//                    expect(destinationMethod.stub.args[0][0]).to.deep.equal({
-//                        dest: destination,
-//                        sync: !extreme,
-//                    });
+    //                    //Reset call counts
+    //                    destinationMethod.reset();
 
-//                    //Reset the initialized flag
-//                    _logger.__set__('_isInitialized', false);
+    //                    expect(_pinoMock.ctor.args[index][1]).to.equal(
+    //                        _pinoMock.__destinationObject
+    //                    );
+    //                });
+    //            });
+    //        });
 
-//                    //Reset call counts
-//                    destinationMethod.reset();
+    //        it('should default extreme = true if a valid boolean value is not specified', async function () {
+    //            const inputs = _testValues.allButBoolean();
 
-//                    expect(_pinoMock.ctor.args[index][1]).to.equal(
-//                        _pinoMock.__destinationObject
-//                    );
-//                });
-//            });
-//        });
+    //            inputs.forEach((extreme, index) => {
+    //                const name = _testValues.getString('appName');
+    //                const destination = _testValues.getString('destination');
+    //                const options = { destination, extreme };
 
-//        it('should default extreme = true if a valid boolean value is not specified', async function () {
-//            const inputs = _testValues.allButBoolean();
+    //                const destinationMethod = _pinoMock.mocks.destination;
 
-//            inputs.forEach((extreme, index) => {
-//                const name = _testValues.getString('appName');
-//                const destination = _testValues.getString('destination');
-//                const options = { destination, extreme };
+    //                expect(destinationMethod.stub).to.not.have.been.called;
 
-//                const destinationMethod = _pinoMock.mocks.destination;
+    //                _logger.configure(name, options);
 
-//                expect(destinationMethod.stub).to.not.have.been.called;
+    //                expect(destinationMethod.stub).to.have.been.calledOnce;
 
-//                _logger.configure(name, options);
+    //                expect(destinationMethod.stub).to.have.been.calledWithExactly({
+    //                    dest: destination,
+    //                    sync: true,
+    //                });
 
-//                expect(destinationMethod.stub).to.have.been.calledOnce;
+    //                //Reset the initialized flag
+    //                _logger.__set__('_isInitialized', false);
 
-//                expect(destinationMethod.stub).to.have.been.calledWithExactly({
-//                    dest: destination,
-//                    sync: true,
-//                });
+    //                //Reset call counts
+    //                destinationMethod.reset();
 
-//                //Reset the initialized flag
-//                _logger.__set__('_isInitialized', false);
+    //                expect(_pinoMock.ctor.args[index][1]).to.equal(
+    //                    _pinoMock.__destinationObject
+    //                );
+    //            });
+    //        });
 
-//                //Reset call counts
-//                destinationMethod.reset();
+    //        it('should use the default value for serializers if a valid value is not specified', async function () {
+    //            const inputs = _testValues.allButObject();
 
-//                expect(_pinoMock.ctor.args[index][1]).to.equal(
-//                    _pinoMock.__destinationObject
-//                );
-//            });
-//        });
+    //            inputs.forEach((serializers, index) => {
+    //                const name = _testValues.getString('appName');
+    //                const options = { serializers };
+    //                _logger.configure(name, options);
 
-//        it('should use the default value for serializers if a valid value is not specified', async function () {
-//            const inputs = _testValues.allButObject();
+    //                //Reset the initialized flag
+    //                _logger.__set__('_isInitialized', false);
 
-//            inputs.forEach((serializers, index) => {
-//                const name = _testValues.getString('appName');
-//                const options = { serializers };
-//                _logger.configure(name, options);
+    //                const args = _pinoMock.ctor.args[index][0];
+    //                expect(args.serializers).to.deep.equal({});
+    //            });
+    //        });
 
-//                //Reset the initialized flag
-//                _logger.__set__('_isInitialized', false);
+    //        it('should use the default value for redact if a valid value is not specified', async function () {
+    //            const inputs = _testValues.allButArray();
 
-//                const args = _pinoMock.ctor.args[index][0];
-//                expect(args.serializers).to.deep.equal({});
-//            });
-//        });
+    //            inputs.forEach((redact, index) => {
+    //                const name = _testValues.getString('appName');
+    //                const options = { redact };
+    //                _logger.configure(name, options);
 
-//        it('should use the default value for redact if a valid value is not specified', async function () {
-//            const inputs = _testValues.allButArray();
+    //                //Reset the initialized flag
+    //                _logger.__set__('_isInitialized', false);
 
-//            inputs.forEach((redact, index) => {
-//                const name = _testValues.getString('appName');
-//                const options = { redact };
-//                _logger.configure(name, options);
+    //                const args = _pinoMock.ctor.args[index][0];
+    //                expect(args.redact).to.deep.equal([]);
+    //            });
+    //        });
 
-//                //Reset the initialized flag
-//                _logger.__set__('_isInitialized', false);
+    //        it('should have no impact if invoked multiple times', async function () {
+    //            let name = _testValues.getString('appName');
+    //            _logger.configure(name);
 
-//                const args = _pinoMock.ctor.args[index][0];
-//                expect(args.redact).to.deep.equal([]);
-//            });
-//        });
+    //            for (let index = 0; index < 10; index++) {
+    //                _pinoMock.ctor.resetHistory();
+    //                name = _testValues.getString('appName');
+    //                _logger.configure(name);
 
-//        it('should have no impact if invoked multiple times', async function () {
-//            let name = _testValues.getString('appName');
-//            _logger.configure(name);
+    //                expect(_pinoMock.ctor).to.not.have.been.called;
+    //            }
+    //        });
+    //    });
 
-//            for (let index = 0; index < 10; index++) {
-//                _pinoMock.ctor.resetHistory();
-//                name = _testValues.getString('appName');
-//                _logger.configure(name);
+    //    describe('getLogger()', function () {
+    //        it('should throw an error if invoked without a logger group name', async function () {
+    //            const message = 'Invalid group (arg #1)';
+    //            const name = _testValues.getString('appName');
+    //            _logger.configure(name);
 
-//                expect(_pinoMock.ctor).to.not.have.been.called;
-//            }
-//        });
-//    });
+    //            const inputs = _testValues.allButString('');
+    //            inputs.forEach((group) => {
+    //                const wrapper = () => {
+    //                    return _logger.getLogger(group);
+    //                };
 
-//    describe('getLogger()', function () {
-//        it('should throw an error if invoked without a logger group name', async function () {
-//            const message = 'Invalid group (arg #1)';
-//            const name = _testValues.getString('appName');
-//            _logger.configure(name);
+    //                expect(wrapper).to.throw(ArgError, message);
+    //            });
+    //        });
 
-//            const inputs = _testValues.allButString('');
-//            inputs.forEach((group) => {
-//                const wrapper = () => {
-//                    return _logger.getLogger(group);
-//                };
+    //        it('should return a dummy logger if the logger has not been configured', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const logger = _logger.getLogger(appName);
 
-//                expect(wrapper).to.throw(ArgError, message);
-//            });
-//        });
+    //            expect(logger).to.be.an('object');
+    //            LOG_LEVELS.forEach((level) => {
+    //                const method = logger[level];
 
-//        it('should return a dummy logger if the logger has not been configured', async function () {
-//            const appName = _testValues.getString('appName');
-//            const logger = _logger.getLogger(appName);
+    //                expect(method).to.be.a('function');
+    //                expect(method()).to.be.undefined;
+    //            });
 
-//            expect(logger).to.be.an('object');
-//            LOG_LEVELS.forEach((level) => {
-//                const method = logger[level];
+    //            expect(logger.child()).to.equal(logger);
+    //            expect(logger.__isMock).to.be.true;
+    //        });
 
-//                expect(method).to.be.a('function');
-//                expect(method()).to.be.undefined;
-//            });
+    //        it('should return a logger object if the logger has been configured', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const group = _testValues.getString('group');
+    //            _logger.configure(appName);
 
-//            expect(logger.child()).to.equal(logger);
-//            expect(logger.__isMock).to.be.true;
-//        });
+    //            const logger = _logger.getLogger(group);
+    //            expect(logger).to.be.an('object');
 
-//        it('should return a logger object if the logger has been configured', async function () {
-//            const appName = _testValues.getString('appName');
-//            const group = _testValues.getString('group');
-//            _logger.configure(appName);
+    //            LOG_LEVELS.forEach((level) => {
+    //                const method = logger[level];
+    //                expect(method).to.be.a('function');
+    //            });
+    //            expect(logger.child).to.be.a('function');
+    //            expect(logger.__isMock).to.be.undefined;
+    //        });
 
-//            const logger = _logger.getLogger(group);
-//            expect(logger).to.be.an('object');
+    //        it('should create a child logger with the specified logger group name', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const group = _testValues.getString('group');
+    //            const childMethod = _pinoMock.mocks.child;
 
-//            LOG_LEVELS.forEach((level) => {
-//                const method = logger[level];
-//                expect(method).to.be.a('function');
-//            });
-//            expect(logger.child).to.be.a('function');
-//            expect(logger.__isMock).to.be.undefined;
-//        });
+    //            _logger.configure(appName);
 
-//        it('should create a child logger with the specified logger group name', async function () {
-//            const appName = _testValues.getString('appName');
-//            const group = _testValues.getString('group');
-//            const childMethod = _pinoMock.mocks.child;
+    //            expect(childMethod.stub).to.not.have.been.called;
+    //            _logger.getLogger(group);
 
-//            _logger.configure(appName);
+    //            expect(childMethod.stub).to.have.been.calledOnce;
+    //            const args = childMethod.stub.args[0][0];
 
-//            expect(childMethod.stub).to.not.have.been.called;
-//            _logger.getLogger(group);
+    //            expect(args).to.deep.equal({
+    //                group,
+    //            });
+    //        });
 
-//            expect(childMethod.stub).to.have.been.calledOnce;
-//            const args = childMethod.stub.args[0][0];
+    //        it('should add any additional properties specified to the logger instance', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const group = _testValues.getString('group');
+    //            const props = {
+    //                foo: 'bar',
+    //                abc: 123,
+    //                obj: {
+    //                    add: 'me',
+    //                },
+    //                level: 'trace',
+    //            };
+    //            const childMethod = _pinoMock.mocks.child;
 
-//            expect(args).to.deep.equal({
-//                group,
-//            });
-//        });
+    //            _logger.configure(appName);
 
-//        it('should add any additional properties specified to the logger instance', async function () {
-//            const appName = _testValues.getString('appName');
-//            const group = _testValues.getString('group');
-//            const props = {
-//                foo: 'bar',
-//                abc: 123,
-//                obj: {
-//                    add: 'me',
-//                },
-//                level: 'trace',
-//            };
-//            const childMethod = _pinoMock.mocks.child;
+    //            expect(childMethod.stub).to.not.have.been.called;
+    //            _logger.getLogger(group, props);
 
-//            _logger.configure(appName);
+    //            expect(childMethod.stub).to.have.been.calledOnce;
+    //            const args = childMethod.stub.args[0][0];
 
-//            expect(childMethod.stub).to.not.have.been.called;
-//            _logger.getLogger(group, props);
+    //            const expectedArgs = Object.assign(
+    //                {
+    //                    group,
+    //                },
+    //                props
+    //            );
+    //            expect(args).to.deep.equal(expectedArgs);
+    //        });
 
-//            expect(childMethod.stub).to.have.been.calledOnce;
-//            const args = childMethod.stub.args[0][0];
+    //        it('should ensure that the group property is not overridden by additional properties', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const group = _testValues.getString('group');
+    //            const loggerProps = {
+    //                group: 'this should not override the logger name',
+    //            };
+    //            const childMethod = _pinoMock.mocks.child;
 
-//            const expectedArgs = Object.assign(
-//                {
-//                    group,
-//                },
-//                props
-//            );
-//            expect(args).to.deep.equal(expectedArgs);
-//        });
+    //            _logger.configure(appName);
 
-//        it('should ensure that the group property is not overridden by additional properties', async function () {
-//            const appName = _testValues.getString('appName');
-//            const group = _testValues.getString('group');
-//            const loggerProps = {
-//                group: 'this should not override the logger name',
-//            };
-//            const childMethod = _pinoMock.mocks.child;
+    //            expect(childMethod.stub).to.not.have.been.called;
+    //            _logger.getLogger(group, loggerProps);
 
-//            _logger.configure(appName);
+    //            expect(childMethod.stub).to.have.been.calledOnce;
+    //            const args = childMethod.stub.args[0][0];
 
-//            expect(childMethod.stub).to.not.have.been.called;
-//            _logger.getLogger(group, loggerProps);
+    //            expect(args.group).to.equal(group);
+    //        });
+    //    });
 
-//            expect(childMethod.stub).to.have.been.calledOnce;
-//            const args = childMethod.stub.args[0][0];
+    //    describe('enableMock()', function () {
+    //        it('should return a dummy logger when invoked, even if after logger initialization', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const group = _testValues.getString('group');
 
-//            expect(args.group).to.equal(group);
-//        });
-//    });
+    //            _logger.configure(appName);
+    //            _logger.enableMock();
+    //            const logger = _logger.getLogger(group);
 
-//    describe('enableMock()', function () {
-//        it('should return a dummy logger when invoked, even if after logger initialization', async function () {
-//            const appName = _testValues.getString('appName');
-//            const group = _testValues.getString('group');
+    //            expect(logger).to.be.an('object');
+    //            LOG_LEVELS.forEach((level) => {
+    //                const method = logger[level];
 
-//            _logger.configure(appName);
-//            _logger.enableMock();
-//            const logger = _logger.getLogger(group);
+    //                expect(method).to.be.a('function');
+    //                expect(method()).to.be.undefined;
+    //            });
 
-//            expect(logger).to.be.an('object');
-//            LOG_LEVELS.forEach((level) => {
-//                const method = logger[level];
+    //            expect(logger.__isMock).to.be.true;
+    //        });
+    //    });
 
-//                expect(method).to.be.a('function');
-//                expect(method()).to.be.undefined;
-//            });
+    //    describe('disableMock()', function () {
+    //        it('should disable mocking and return the configured logger object when invoked', async function () {
+    //            const appName = _testValues.getString('appName');
+    //            const group = _testValues.getString('group');
+    //            _logger.configure(appName);
+    //            _logger.enableMock();
 
-//            expect(logger.__isMock).to.be.true;
-//        });
-//    });
+    //            let logger = _logger.getLogger(group);
+    //            expect(logger).to.be.an('object');
+    //            LOG_LEVELS.forEach((level) => {
+    //                const method = logger[level];
 
-//    describe('disableMock()', function () {
-//        it('should disable mocking and return the configured logger object when invoked', async function () {
-//            const appName = _testValues.getString('appName');
-//            const group = _testValues.getString('group');
-//            _logger.configure(appName);
-//            _logger.enableMock();
+    //                expect(method).to.be.a('function');
+    //                expect(method()).to.be.undefined;
+    //            });
+    //            expect(logger.__isMock).to.be.true;
 
-//            let logger = _logger.getLogger(group);
-//            expect(logger).to.be.an('object');
-//            LOG_LEVELS.forEach((level) => {
-//                const method = logger[level];
+    //            _logger.disableMock();
+    //            logger = _logger.getLogger(group);
+    //            expect(logger).to.be.an('object');
+    //            LOG_LEVELS.forEach((level) => {
+    //                const method = logger[level];
 
-//                expect(method).to.be.a('function');
-//                expect(method()).to.be.undefined;
-//            });
-//            expect(logger.__isMock).to.be.true;
-
-//            _logger.disableMock();
-//            logger = _logger.getLogger(group);
-//            expect(logger).to.be.an('object');
-//            LOG_LEVELS.forEach((level) => {
-//                const method = logger[level];
-
-//                expect(method).to.be.a('function');
-//                expect(method()).to.be.undefined;
-//            });
-//            expect(logger.__isMock).to.be.undefined;
-//        });
-//    });
+    //                expect(method).to.be.a('function');
+    //                expect(method()).to.be.undefined;
+    //            });
+    //            expect(logger.__isMock).to.be.undefined;
+    //        });
+    //    });
 });
