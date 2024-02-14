@@ -17,6 +17,11 @@ export type ObjectSerializer = (value: any) => any;
  */
 export interface ILogger {
     /**
+     * Silent logger method.
+     */
+    silent: LogFn;
+
+    /**
      * Trace logger method.
      */
     trace: LogFn;
@@ -49,7 +54,9 @@ export interface ILogger {
     /**
      * Child method.
      */
-    child: (props: Record<string, string|number|boolean|unknown>) => ILogger;
+    child: (
+        props: Record<string, string | number | boolean | unknown>,
+    ) => ILogger;
 }
 
 /**
@@ -107,6 +114,7 @@ const LOG_LEVELS = [
 ];
 
 const MOCK_LOGGER: MockLogger = {
+    silent: EMPTY_FUNC,
     trace: EMPTY_FUNC,
     debug: EMPTY_FUNC,
     info: EMPTY_FUNC,
@@ -178,7 +186,7 @@ export class LogManager {
      *
      * @param [options] A set of logger specific configuration parameters.
      */
-    configure(name: string, options: ILoggerOptions) {
+    configure(name: string, options?: ILoggerOptions) {
         _argValidator.checkString(name, 1, 'Invalid name (arg #1)');
 
         this._isMockEnabled = false;
@@ -208,15 +216,19 @@ export class LogManager {
 
         const destination = this._getDestination(options);
 
-        this._logger = _pino(
-            {
-                name,
-                level: options.level,
-                serializers: options.serializers,
-                redact: options.redact,
-            },
-            destination,
-        );
+        if (this._logger === MOCK_LOGGER) {
+            this._logger = _pino(
+                {
+                    name,
+                    level: options.level,
+                    serializers: options.serializers,
+                    redact: options.redact,
+                },
+                destination,
+            );
+        }
+
+        return this;
     }
 
     /**
@@ -253,7 +265,7 @@ export class LogManager {
      * @return {Object} A logger object that can be used for logging. If the
      *         logger is not already configured using the
      */
-    public getLogger(group: string, props: Record<string, unknown>): ILogger {
+    public getLogger(group: string, props?: Record<string, unknown>): ILogger {
         _argValidator.checkString(group, 1, 'Invalid group (arg #1)');
         if (this._isMockEnabled) {
             return MOCK_LOGGER;
