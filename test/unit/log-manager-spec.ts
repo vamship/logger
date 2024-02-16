@@ -2,6 +2,7 @@ import { expect, use as _useWithChai } from 'chai';
 import _sinonChai from 'sinon-chai';
 import _chaiAsPromised from 'chai-as-promised';
 import 'mocha';
+import process from 'process';
 
 _useWithChai(_sinonChai);
 _useWithChai(_chaiAsPromised);
@@ -49,6 +50,7 @@ describe('logger', function () {
         // eslint-disable-next-line tsel/no-explicit-any
         ((mock: any) => {
             mock.ctor.destination = mock.instance.destination;
+            // eslint-disable-next-line tsel/no-explicit-any
         })(loggerMock as any);
 
         LOG_LEVELS.reduce(
@@ -92,8 +94,10 @@ describe('logger', function () {
         expect(logger.child).to.be.a('function', 'child');
 
         if (isMock) {
+            // eslint-disable-next-line tsel/no-explicit-any
             expect((logger as any).__isMock).to.be.true;
         } else {
+            // eslint-disable-next-line tsel/no-explicit-any
             expect((logger as any).__isMock).to.be.undefined;
         }
     }
@@ -219,11 +223,7 @@ describe('logger', function () {
 
         _testValues.allButString('foo', 'bar', '').forEach((level) => {
             it(`should use the default log level if a valid log level is not specified (value=${level})`, async function () {
-                const {
-                    testTarget: TargetClass,
-                    loggerMock,
-                    destinationObject,
-                } = await _import();
+                const { testTarget: TargetClass, loggerMock } = await _import();
                 const manager = new TargetClass();
 
                 const name = _testValues.getString('appName');
@@ -257,11 +257,8 @@ describe('logger', function () {
         describe('[extreme mode]', function () {
             [true, false].forEach((extreme) => {
                 it(`should apply the extreme flag to the destination if defined in the options (value=${extreme})`, async function () {
-                    const {
-                        testTarget: TargetClass,
-                        loggerMock,
-                        destinationObject,
-                    } = await _import();
+                    const { testTarget: TargetClass, loggerMock } =
+                        await _import();
                     const manager = new TargetClass();
 
                     const destinationMethod = loggerMock.mocks.destination;
@@ -283,11 +280,8 @@ describe('logger', function () {
 
             [true, false].forEach((extreme) => {
                 it(`should not apply the extreme flag to the destination a destination object is specified (value=${extreme})`, async function () {
-                    const {
-                        testTarget: TargetClass,
-                        loggerMock,
-                        destinationObject,
-                    } = await _import();
+                    const { testTarget: TargetClass, loggerMock } =
+                        await _import();
                     const manager = new TargetClass();
                     const destinationMethod = loggerMock.mocks.destination;
                     const name = _testValues.getString('appName');
@@ -438,11 +432,8 @@ describe('logger', function () {
 
             _testValues.allButObject().forEach((serializers) => {
                 it(`should use the default value for serializers if a valid value is not specified (value=${serializers})`, async function () {
-                    const {
-                        testTarget: TargetClass,
-                        loggerMock,
-                        destinationObject,
-                    } = await _import();
+                    const { testTarget: TargetClass, loggerMock } =
+                        await _import();
                     const manager = new TargetClass();
                     const name = _testValues.getString('appName');
                     const options = { serializers };
@@ -450,19 +441,16 @@ describe('logger', function () {
                     manager.configure(name, options as ILoggerOptions);
 
                     const args = loggerMock.ctor.args[0][0] as {
-                        serializers: {};
+                        serializers: Record<string, unknown>;
                     };
                     expect(args.serializers).to.deep.equal({});
                 });
             });
 
-            const inputs = _testValues.allButArray().forEach((redact) => {
+            _testValues.allButArray().forEach((redact) => {
                 it(`should use the default value for redact if a valid value is not specified (value=${redact})`, async function () {
-                    const {
-                        testTarget: TargetClass,
-                        loggerMock,
-                        destinationObject,
-                    } = await _import();
+                    const { testTarget: TargetClass, loggerMock } =
+                        await _import();
                     const manager = new TargetClass();
                     const name = _testValues.getString('appName');
                     const options = { redact } as ILoggerOptions;
@@ -477,11 +465,7 @@ describe('logger', function () {
             });
 
             it('should have no impact if invoked multiple times', async function () {
-                const {
-                    testTarget: TargetClass,
-                    loggerMock,
-                    destinationObject,
-                } = await _import();
+                const { testTarget: TargetClass, loggerMock } = await _import();
                 const manager = new TargetClass();
                 const name = _testValues.getString('appName');
 
@@ -500,11 +484,7 @@ describe('logger', function () {
     describe('getLogger()', function () {
         _testValues.allButString('').forEach((group) => {
             it(`should throw an error if invoked without a logger group name (value=${group})`, async function () {
-                const {
-                    testTarget: TargetClass,
-                    loggerMock,
-                    destinationObject,
-                } = await _import();
+                const { testTarget: TargetClass } = await _import();
                 const manager = new TargetClass();
                 const message = 'Invalid group (arg #1)';
                 const name = _testValues.getString('appName');
@@ -520,11 +500,7 @@ describe('logger', function () {
         });
 
         it('should return a dummy logger if the logger has not been configured', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const logger = manager.getLogger(appName);
@@ -537,11 +513,7 @@ describe('logger', function () {
         });
 
         it('should return a logger object if the logger has been configured', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
@@ -556,11 +528,7 @@ describe('logger', function () {
         });
 
         it('should create a child logger with the specified logger group name', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass, loggerMock } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
@@ -581,11 +549,7 @@ describe('logger', function () {
         });
 
         it('should add any additional properties specified to the logger instance', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass, loggerMock } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
@@ -616,11 +580,7 @@ describe('logger', function () {
         });
 
         it('should ensure that the group property is not overridden by additional properties', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass, loggerMock } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
@@ -645,11 +605,7 @@ describe('logger', function () {
 
     describe('enableMock()', function () {
         it('should return a dummy logger when invoked, even if after logger initialization', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
@@ -667,11 +623,7 @@ describe('logger', function () {
 
     describe('disableMock()', function () {
         it('should disable mocking and return the configured logger object when invoked', async function () {
-            const {
-                testTarget: TargetClass,
-                loggerMock,
-                destinationObject,
-            } = await _import();
+            const { testTarget: TargetClass } = await _import();
             const manager = new TargetClass();
             const appName = _testValues.getString('appName');
             const group = _testValues.getString('group');
