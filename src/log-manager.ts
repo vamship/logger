@@ -128,7 +128,7 @@ export class LogManager {
                     serializers: options.serializers,
                     redact: options.redact,
                 },
-                destination,
+                destination
             );
         }
 

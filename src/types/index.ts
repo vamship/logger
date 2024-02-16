@@ -53,7 +53,7 @@ export interface ILogger {
      * Child method.
      */
     child: (
-        props: Record<string, string | number | boolean | unknown>,
+        props: Record<string, string | number | boolean | unknown>
     ) => ILogger;
 }
 
