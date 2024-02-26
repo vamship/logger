@@ -26,6 +26,7 @@ const MOCK_LOGGER: MockLogger = {
     error: EMPTY_FUNC,
     fatal: EMPTY_FUNC,
     child: () => MOCK_LOGGER,
+    level: 'silent',
     __isMock: true,
 };
 

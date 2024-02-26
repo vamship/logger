@@ -50,6 +50,11 @@ export interface ILogger {
     fatal: LogFn;
 
     /**
+     * Get/set the current log level.
+     */
+    level: string;
+
+    /**
      * Child method.
      */
     child: (
