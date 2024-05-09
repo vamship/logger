@@ -55,7 +55,7 @@ describe('logger', function () {
 
         LOG_LEVELS.reduce(
             (result, level) => result.addMock(level, stub()),
-            loggerMock
+            loggerMock,
         );
 
         const importHelper = new MockImportHelper<LogManager>(
@@ -63,7 +63,7 @@ describe('logger', function () {
             {
                 pino: 'pino',
             },
-            import.meta.resolve('../../../working')
+            import.meta.resolve('../../../working'),
         );
 
         importHelper.setMock('pino', { default: loggerMock.ctor });
@@ -71,7 +71,7 @@ describe('logger', function () {
         const targetModule = await _esmock(
             importHelper.importPath,
             importHelper.getLibs(),
-            importHelper.getGlobals()
+            importHelper.getGlobals(),
         );
 
         return {
@@ -324,7 +324,7 @@ describe('logger', function () {
                         sync: !extreme,
                     });
                     expect(loggerMock.ctor.args[0][1]).to.equal(
-                        destinationObject
+                        destinationObject,
                     );
                 });
             });
@@ -356,7 +356,7 @@ describe('logger', function () {
                     });
 
                     expect(loggerMock.ctor.args[0][1]).to.equal(
-                        destinationObject
+                        destinationObject,
                     );
                 });
             });
@@ -388,7 +388,7 @@ describe('logger', function () {
                     });
 
                     expect(loggerMock.ctor.args[0][1]).to.equal(
-                        destinationObject
+                        destinationObject,
                     );
                 });
             });
@@ -415,7 +415,7 @@ describe('logger', function () {
                     expect(destinationMethod.stub).to.have.been.calledOnce;
 
                     expect(
-                        destinationMethod.stub
+                        destinationMethod.stub,
                     ).to.have.been.calledWithExactly({
                         dest: destination,
                         sync: true,
@@ -425,7 +425,7 @@ describe('logger', function () {
                     destinationMethod.reset();
 
                     expect(loggerMock.ctor.args[0][1]).to.equal(
-                        destinationObject
+                        destinationObject,
                     );
                 });
             });
