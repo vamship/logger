@@ -48,6 +48,8 @@ export default [
                 setInterval: true,
                 clearInterval: true,
                 beforeEach: true,
+                afterEach: true,
+                process: true,
                 setTimeout: true,
             },
         },
