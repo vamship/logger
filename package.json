@@ -34,27 +34,27 @@
     "license": "MIT",
     "devDependencies": {
         "@types/chai-as-promised": "^7.1.8",
-        "@types/mocha": "^10.0.6",
-        "@types/node": "^20.11.16",
+        "@types/mocha": "^10.0.7",
+        "@types/node": "^20.14.9",
         "@types/sinon-chai": "^3.2.12",
-        "@typescript-eslint/eslint-plugin": "^6.20.0",
-        "@vamship/build-utils": "^2.0.0",
-        "@vamship/test-utils": "^3.0.0",
-        "c8": "^9.1.0",
+        "@typescript-eslint/eslint-plugin": "^7.14.1",
+        "@vamship/build-utils": "^2.2.2",
+        "@vamship/test-utils": "^3.1.1",
+        "c8": "^10.1.2",
         "chai": "^4.4.1",
-        "chai-as-promised": "^7.1.1",
+        "chai-as-promised": "^8.0.0",
         "cross-env": "^7.0.3",
         "dotenv-load": "^3.0.0",
-        "esmock": "^2.6.3",
-        "gulp": "^4.0.2",
-        "mocha": "^10.2.0",
-        "sinon": "^17.0.1",
+        "esmock": "^2.6.6",
+        "gulp": "^5.0.0",
+        "mocha": "^10.5.2",
+        "sinon": "^18.0.0",
         "sinon-chai": "^3.7.0"
     },
     "dependencies": {
-        "@vamship/arg-utils": "3.0.0",
-        "minimatch": "^9.0.3",
-        "pino": "^8.18.0"
+        "@vamship/arg-utils": "3.0.1",
+        "minimatch": "^9.0.5",
+        "pino": "^9.2.0"
     },
     "peerDependencies": {
         "@vamship/error-types": "2.0.0"
