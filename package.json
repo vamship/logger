@@ -1,6 +1,6 @@
 {
     "name": "@vamship/logger",
-    "version": "5.0.1",
+    "version": "5.0.2",
     "description": "Wraps a logger object with some utility methods for initialization and debugging",
     "type": "module",
     "main": "src/index.js",
