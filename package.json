@@ -52,7 +52,7 @@
         "sinon-chai": "^3.7.0"
     },
     "dependencies": {
-        "@vamship/arg-utils": "3.0.2",
+        "@vamship/arg-utils": "3.0.3",
         "minimatch": "^9.0.5",
         "pino": "^9.2.0"
     },
