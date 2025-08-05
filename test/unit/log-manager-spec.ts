@@ -88,16 +88,17 @@ describe('logger', function () {
             const method = loggerMap[level] as () => void;
 
             expect(method).to.be.a('function', `level=[${level}]`);
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(method()).to.be.undefined;
         });
 
         expect(logger.child).to.be.a('function', 'child');
 
         if (isMock) {
-            // eslint-disable-next-line tsel/no-explicit-any
+            // eslint-disable-next-line tsel/no-explicit-any, tsel/no-unused-expressions
             expect((logger as any).__isMock).to.be.true;
         } else {
-            // eslint-disable-next-line tsel/no-explicit-any
+            // eslint-disable-next-line tsel/no-explicit-any, tsel/no-unused-expressions
             expect((logger as any).__isMock).to.be.undefined;
         }
     }
@@ -166,17 +167,21 @@ describe('logger', function () {
                 redact,
             };
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(destinationMethod.stub).to.not.have.been.called;
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(loggerMock.ctor).to.not.have.been.called;
 
             manager.configure(name, options);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(destinationMethod.stub).to.have.been.calledOnce;
             expect(destinationMethod.stub).to.have.been.calledWithExactly({
                 dest: destination,
                 sync: !extreme,
             });
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(loggerMock.ctor).to.have.been.calledOnce;
             expect(loggerMock.ctor.args[0][0]).to.deep.equal({
                 name,
@@ -199,17 +204,21 @@ describe('logger', function () {
 
                 const name = _testValues.getString('appName');
 
+                // eslint-disable-next-line tsel/no-unused-expressions
                 expect(destinationMethod.stub).to.not.have.been.called;
+                // eslint-disable-next-line tsel/no-unused-expressions
                 expect(loggerMock.ctor).to.not.have.been.called;
 
                 manager.configure(name, options as ILoggerOptions);
 
+                // eslint-disable-next-line tsel/no-unused-expressions
                 expect(destinationMethod.stub).to.have.been.calledOnce;
                 expect(destinationMethod.stub).to.have.been.calledWithExactly({
                     fd: process.stdout.fd,
                     sync: true,
                 });
 
+                // eslint-disable-next-line tsel/no-unused-expressions
                 expect(loggerMock.ctor).to.have.been.calledOnce;
                 expect(loggerMock.ctor.args[0][0]).to.deep.equal({
                     name,
@@ -246,10 +255,12 @@ describe('logger', function () {
             const options = { destination, extreme: false };
             const destinationMethod = loggerMock.mocks.destination;
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(destinationMethod.stub).to.not.have.been.called;
 
             manager.configure(name, options as ILoggerOptions);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(destinationMethod.stub).to.not.have.been.called;
             expect(loggerMock.ctor.args[0][1]).to.equal(destination);
         });
@@ -265,10 +276,12 @@ describe('logger', function () {
 
                     const name = _testValues.getString('appName');
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     manager.configure(name, { extreme });
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.have.been.calledOnce;
                     expect(destinationMethod.stub.args[0]).to.have.length(1);
                     expect(destinationMethod.stub.args[0][0]).to.deep.equal({
@@ -288,10 +301,12 @@ describe('logger', function () {
                     // eslint-disable-next-line tsel/no-explicit-any
                     const destination = {} as any;
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     manager.configure(name, { extreme, destination });
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     expect(loggerMock.ctor.args[0][1]).to.equal(destination);
@@ -312,10 +327,12 @@ describe('logger', function () {
                     const destination = 'process.stdout';
                     const options = { destination, extreme };
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     manager.configure(name, options);
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.have.been.calledOnce;
 
                     expect(destinationMethod.stub.args[0]).to.have.length(1);
@@ -343,10 +360,12 @@ describe('logger', function () {
                     const destination = 'process.stderr';
                     const options = { destination, extreme };
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     manager.configure(name, options);
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.have.been.calledOnce;
 
                     expect(destinationMethod.stub.args[0]).to.have.length(1);
@@ -375,10 +394,12 @@ describe('logger', function () {
                     const destination = _testValues.getString('destination');
                     const options = { destination, extreme };
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     manager.configure(name, options);
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.have.been.calledOnce;
 
                     expect(destinationMethod.stub.args[0]).to.have.length(1);
@@ -408,10 +429,12 @@ describe('logger', function () {
 
                     const destinationMethod = loggerMock.mocks.destination;
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.not.have.been.called;
 
                     manager.configure(name, options as ILoggerOptions);
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(destinationMethod.stub).to.have.been.calledOnce;
 
                     expect(
@@ -475,6 +498,7 @@ describe('logger', function () {
                 for (let index = 0; index < 10; index++) {
                     manager.configure(_testValues.getString('appName'));
 
+                    // eslint-disable-next-line tsel/no-unused-expressions
                     expect(loggerMock.ctor).to.not.have.been.called;
                 }
             });
@@ -536,10 +560,12 @@ describe('logger', function () {
 
             manager.configure(appName);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(childMethod.stub).to.not.have.been.called;
 
             manager.getLogger(group);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(childMethod.stub).to.have.been.calledOnce;
             const args = childMethod.stub.args[0][0];
 
@@ -565,10 +591,12 @@ describe('logger', function () {
 
             manager.configure(appName);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(childMethod.stub).to.not.have.been.called;
 
             manager.getLogger(group, props);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(childMethod.stub).to.have.been.calledOnce;
             const args = childMethod.stub.args[0][0];
 
@@ -592,10 +620,12 @@ describe('logger', function () {
 
             manager.configure(appName);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(childMethod.stub).to.not.have.been.called;
 
             manager.getLogger(group, loggerProps);
 
+            // eslint-disable-next-line tsel/no-unused-expressions
             expect(childMethod.stub).to.have.been.calledOnce;
             const args = childMethod.stub.args[0][0] as { group: string };
 
