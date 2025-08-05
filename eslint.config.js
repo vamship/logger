@@ -1,5 +1,6 @@
 import tselPlugin from '@typescript-eslint/eslint-plugin';
 import tselParser from '@typescript-eslint/parser';
+import _js from '@eslint/js';
 
 const tselRules = tselPlugin.configs.recommended.rules;
 
@@ -18,7 +19,7 @@ const commonRules = {
 };
 
 export default [
-    'eslint:recommended',
+    _js.configs.recommended,
     {
         files: ['**/*.js', '**/*.jsx'],
         languageOptions: {
